@@ -26,7 +26,7 @@ function App() {
   })
 
   useEffect(() => {
-    fetch('/src/references.json')
+    fetch('/references.json')
       .then(res => res.json())
       .then(data => setReferences(data))
       .catch(err => console.error('Error:', err))
