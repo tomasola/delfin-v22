@@ -1,202 +1,289 @@
-﻿import { useState, useEffect } from 'react'
-
-interface Reference {
-  code: string
-  image: string
-  category: string
-}
-
-interface ReferenceData {
-  length: string
-  quantity: string
-  boxSize: string
-  notes: string
-}
+﻿import { useState, useMemo, useEffect } from 'react'
+import type { Reference, ToastMessage } from './types'
+import { useReferences } from './hooks/useReferences'
+import { useDebounce } from './hooks/useDebounce'
+import { useTheme } from './hooks/useTheme'
+import { LoadingSpinner } from './components/LoadingSpinner'
+import { SearchBar } from './components/SearchBar'
+import { CategoryFilter } from './components/CategoryFilter'
+import { ReferenceCard } from './components/ReferenceCard'
+import { ReferenceDetail } from './components/ReferenceDetail'
+import { ToastContainer } from './components/Toast'
+import { getUniqueCategories, filterByCategory, filterReferences } from './utils/search'
+import { exportDataAsCSV, exportDataAsJSON } from './utils/export'
 
 function App() {
   const [search, setSearch] = useState('')
-  const [references, setReferences] = useState<Reference[]>([])
-  const [results, setResults] = useState<Reference[]>([])
+  const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedRef, setSelectedRef] = useState<Reference | null>(null)
-  const [refData, setRefData] = useState<ReferenceData>({
-    length: '',
-    quantity: '',
-    boxSize: '',
-    notes: ''
-  })
+  const [toasts, setToasts] = useState<ToastMessage[]>([])
 
-  useEffect(() => {
-    fetch('/references.json')
-      .then(res => res.json())
-      .then(data => setReferences(data))
-      .catch(err => console.error('Error:', err))
-  }, [])
+  // Pagination
+  const [page, setPage] = useState(1)
+  const ITEMS_PER_PAGE = 24
 
+  const { references, loading, error } = useReferences()
+  const { theme, toggleTheme } = useTheme()
+  const debouncedSearch = useDebounce(search, 300)
+
+  // Reset page when filter changes
   useEffect(() => {
-    if (search.trim() === '') {
-      setResults([])
-      return
+    setPage(1)
+  }, [debouncedSearch, selectedCategory])
+
+  // Get unique categories
+  const categories = useMemo(() => getUniqueCategories(references), [references])
+
+  // Filter and search logic
+  const filteredResults = useMemo(() => {
+    // If no search and no category, return empty
+    if (!debouncedSearch.trim() && !selectedCategory) {
+      return []
     }
-    const filtered = references.filter(ref => 
-      ref.code.toLowerCase().includes(search.toLowerCase())
-    )
-    setResults(filtered.slice(0, 20))
-  }, [search, references])
+
+    let result = references
+
+    // 1. Search Logic (Global - searches in all categories)
+    if (debouncedSearch.trim()) {
+      // Search in all references, ignoring current category filter
+      result = filterReferences(references, debouncedSearch)
+    }
+    // 2. Category Filter (only if no search term)
+    else if (selectedCategory) {
+      result = filterByCategory(result, selectedCategory)
+    }
+
+    // 3. Deduplication (ensure unique codes)
+    // "si existe algun duplicado solo se muestra uno"
+    const uniqueMap = new Map()
+    result.forEach(ref => {
+      if (!uniqueMap.has(ref.code)) {
+        uniqueMap.set(ref.code, ref)
+      }
+    })
+
+    return Array.from(uniqueMap.values())
+  }, [references, selectedCategory, debouncedSearch])
+
+  // Toast management
+  const addToast = (message: string, type: ToastMessage['type'] = 'info') => {
+    const toast: ToastMessage = {
+      id: Date.now().toString(),
+      message,
+      type,
+      duration: 3000
+    }
+    setToasts(prev => [...prev, toast])
+  }
+
+  const removeToast = (id: string) => {
+    setToasts(prev => prev.filter(t => t.id !== id))
+  }
 
   const handleSelectRef = (ref: Reference) => {
     setSelectedRef(ref)
-    const saved = localStorage.getItem(`ref_${ref.code}`)
-    if (saved) {
-      setRefData(JSON.parse(saved))
+  }
+
+  const handleBack = () => {
+    setSelectedRef(null)
+  }
+
+  const handleSave = (success: boolean) => {
+    if (success) {
+      addToast('Datos guardados exitosamente', 'success')
     } else {
-      setRefData({ length: '', quantity: '', boxSize: '', notes: '' })
+      addToast('Error al guardar los datos', 'error')
     }
   }
 
-  const handleSaveData = () => {
-    if (selectedRef) {
-      localStorage.setItem(`ref_${selectedRef.code}`, JSON.stringify(refData))
-      alert('Datos guardados')
+  const handleExportCSV = () => {
+    const success = exportDataAsCSV()
+    if (success) {
+      addToast('Datos exportados a CSV', 'success')
+    } else {
+      addToast('No hay datos para exportar', 'warning')
     }
   }
 
+  const handleExportJSON = () => {
+    const success = exportDataAsJSON()
+    if (success) {
+      addToast('Datos exportados a JSON', 'success')
+    } else {
+      addToast('No hay datos para exportar', 'warning')
+    }
+  }
+
+  const handleSearchChange = (term: string) => {
+    setSearch(term)
+    if (term) setSelectedCategory('') // Clear category when searching to avoid confusion (Global Search)
+  }
+
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category)
+    setSearch('') // Clear search when selecting a category to show full list
+  }
+
+  // Show detail view if reference is selected
   if (selectedRef) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="max-w-2xl mx-auto">
+      <>
+        <ReferenceDetail
+          reference={selectedRef}
+          onBack={handleBack}
+          onSave={handleSave}
+        />
+        <ToastContainer messages={toasts} onClose={removeToast} />
+      </>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4 flex items-center justify-center">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-md">
+          <div className="text-red-500 text-5xl mb-4 text-center">⚠️</div>
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2 text-center">Error</h2>
+          <p className="text-gray-600 dark:text-gray-400 text-center">{error}</p>
           <button
-            onClick={() => setSelectedRef(null)}
-            className="mb-4 text-blue-600 flex items-center gap-2"
+            onClick={() => window.location.reload()}
+            className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg"
           >
-            ← Volver
+            Reintentar
           </button>
-          
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <img 
-              src={selectedRef.image} 
-              alt={selectedRef.code}
-              className="w-full max-h-64 object-contain rounded mb-4"
-            />
-            <h2 className="text-2xl font-bold mb-2">{selectedRef.code}</h2>
-            <p className="text-gray-600 mb-6">{selectedRef.category}</p>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Longitud (m)</label>
-                <input
-                  type="number"
-                  value={refData.length}
-                  onChange={(e) => setRefData({...refData, length: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  placeholder="0"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Cantidad</label>
-                <input
-                  type="number"
-                  value={refData.quantity}
-                  onChange={(e) => setRefData({...refData, quantity: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  placeholder="0"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Tamaño de caja</label>
-                <input
-                  type="text"
-                  value={refData.boxSize}
-                  onChange={(e) => setRefData({...refData, boxSize: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  placeholder="Ej: 50x30x20"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Notas</label>
-                <textarea
-                  value={refData.notes}
-                  onChange={(e) => setRefData({...refData, notes: e.target.value})}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  rows={3}
-                  placeholder="Notas adicionales..."
-                />
-              </div>
-              
-              <button
-                onClick={handleSaveData}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors"
-              >
-                Guardar
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     )
   }
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+        <LoadingSpinner />
+      </div>
+    )
+  }
+
+  // Main view
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <div className="max-w-4xl mx-auto">
+        {/* Header */}
         <div className="text-center mb-8 mt-4">
           <img src="/logo.webp" alt="Delfín" className="w-20 h-20 mx-auto mb-4" />
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
             Delfín Etiquetas
           </h1>
         </div>
-        
-        <div className="relative mb-8">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar referencia..."
-            className="w-full px-6 py-4 text-lg rounded-full shadow-lg border-2 border-transparent focus:border-blue-500 focus:outline-none transition-all"
-          />
-          {search && (
-            <button
-              onClick={() => setSearch('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-2xl"
-            >
-              ✕
-            </button>
-          )}
+
+        {/* Theme toggle and export buttons */}
+        <div className="flex justify-end gap-2 mb-4">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg bg-white dark:bg-gray-800 shadow hover:shadow-md transition-shadow"
+            aria-label="Cambiar tema"
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </button>
+          <button
+            onClick={handleExportCSV}
+            className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 shadow hover:shadow-md transition-shadow text-sm"
+            aria-label="Exportar a CSV"
+          >
+            📊 CSV
+          </button>
+          <button
+            onClick={handleExportJSON}
+            className="px-4 py-2 rounded-lg bg-white dark:bg-gray-800 shadow hover:shadow-md transition-shadow text-sm"
+            aria-label="Exportar a JSON"
+          >
+            📄 JSON
+          </button>
         </div>
 
-        {results.length > 0 && (
-          <div className="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <p className="text-sm text-gray-600 mb-4">
-              {results.length} resultado{results.length !== 1 ? 's' : ''}
+
+        {/* Search bar */}
+        <SearchBar
+          value={search}
+          onChange={handleSearchChange}
+        />
+
+        {/* Category filter */}
+        {categories.length > 0 && (
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={handleCategorySelect}
+          />
+        )}
+
+        {/* Results */}
+        {filteredResults.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 md:p-6">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              {filteredResults.length} resultado{filteredResults.length !== 1 ? 's' : ''}
+              {selectedCategory && ` en ${selectedCategory}`}
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-              {results.map((ref) => (
-                <button
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 mb-6">
+              {filteredResults.slice(0, page * ITEMS_PER_PAGE).map((ref) => (
+                <ReferenceCard
                   key={ref.code}
-                  onClick={() => handleSelectRef(ref)}
-                  className="border rounded-lg p-3 hover:shadow-md transition-shadow text-left"
-                >
-                  <img 
-                    src={ref.image} 
-                    alt={ref.code}
-                    className="w-full h-24 md:h-32 object-cover rounded mb-2"
-                  />
-                  <p className="font-semibold text-sm truncate">{ref.code}</p>
-                  <p className="text-xs text-gray-500 truncate">{ref.category}</p>
-                </button>
+                  reference={ref}
+                  onClick={handleSelectRef}
+                />
               ))}
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4 pb-8">
+
+              {/* Load More */}
+              {filteredResults.length > page * ITEMS_PER_PAGE && (
+                <button
+                  onClick={() => setPage(p => p + 1)}
+                  className="px-8 py-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-full font-bold hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors shadow-sm animate-in fade-in slide-in-from-bottom-4 flex items-center gap-2"
+                >
+                  <span>👇</span> Cargar más ({filteredResults.length - (page * ITEMS_PER_PAGE)})
+                </button>
+              )}
+
+              {/* Scroll To Top */}
+              {(page > 1 || filteredResults.length > 12) && (
+                <button
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shadow-sm animate-in fade-in slide-in-from-bottom-4 flex items-center gap-2"
+                >
+                  <span>⬆️</span> Inicio
+                </button>
+              )}
             </div>
           </div>
         )}
 
-        {search && results.length === 0 && references.length > 0 && (
-          <div className="text-center text-gray-600">
+        {/* No results */}
+        {(search || selectedCategory) && filteredResults.length === 0 && references.length > 0 && (
+          <div className="text-center text-gray-600 dark:text-gray-400">
+            <p className="text-4xl mb-2">🔍</p>
             <p>No se encontraron resultados</p>
           </div>
         )}
+
+        {/* Empty state */}
+        {!search && !selectedCategory && references.length > 0 && (
+          <div className="text-center text-gray-600 dark:text-gray-400 mt-12">
+            <p className="text-4xl mb-2">👆</p>
+            <p>Busca una referencia para comenzar</p>
+            <p className="text-sm mt-2">{references.length} referencias disponibles</p>
+          </div>
+        )}
       </div>
+
+      {/* Toast notifications */}
+      <ToastContainer messages={toasts} onClose={removeToast} />
     </div>
   )
 }

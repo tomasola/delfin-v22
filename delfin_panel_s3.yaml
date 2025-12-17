@@ -1,0 +1,113 @@
+substitutions:
+  name: ball5
+  friendly_name: "Panel Control HA"
+  wifi_ssid: "casa"
+  wifi_password: "tomas30ola"
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  min_version: 2024.6.0
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+
+logger:
+
+api:
+  encryption:
+    key: "mAul7ljatljTZsZpdjekRBSuBVHkhsqo7ZdZfyCrycc="
+
+ota:
+  - platform: esphome
+    password: "e36e68c2864353e563b363b0fd0cd32d"
+
+wifi:
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
+  ap:
+    ssid: "Panel HA Fallback"
+    password: "OEj7xJGNI6r2"
+
+captive_portal:
+
+# Botones virtuales que aparecerán en Home Assistant
+button:
+  - platform: template
+    name: "Luces Salón"
+    id: btn_luces_salon
+    on_press:
+      - homeassistant.service:
+          service: script.turn_on
+          data:
+            entity_id: script.boton_panel_1
+
+  - platform: template
+    name: "Jardín ON"
+    id: btn_jardin
+    on_press:
+      - homeassistant.service:
+          service: script.turn_on
+          data:
+            entity_id: script.boton_panel_2
+
+  - platform: template
+    name: "Modo Cine"
+    id: btn_cine
+    on_press:
+      - homeassistant.service:
+          service: script.turn_on
+          data:
+            entity_id: script.boton_panel_3
+
+  - platform: template
+    name: "Todo OFF"
+    id: btn_todo_off
+    on_press:
+      - homeassistant.service:
+          service: script.turn_on
+          data:
+            entity_id: script.boton_panel_4
+
+  - platform: template
+    name: "Ventilador"
+    id: btn_ventilador
+    on_press:
+      - homeassistant.service:
+          service: script.turn_on
+          data:
+            entity_id: script.boton_panel_5
+
+  - platform: template
+    name: "Alarma"
+    id: btn_alarma
+    on_press:
+      - homeassistant.service:
+          service: script.turn_on
+          data:
+            entity_id: script.boton_panel_6
+
+# Switches adicionales para control directo
+switch:
+  - platform: template
+    name: "Control Manual"
+    id: control_manual
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+# Sensores de estado (opcional)
+binary_sensor:
+  - platform: status
+    name: "Estado Conexión"
+
+sensor:
+  - platform: wifi_signal
+    name: "Señal WiFi"
+    update_interval: 60s
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "Dirección IP"
