@@ -1,3 +1,4 @@
+lvgl/lvgl @ ^8.3.9
 moononournation/GFX Library for Arduino @ 1.6.0
-Wire
 bblanchon/ArduinoJson @ ^6.21.3
+Wire
