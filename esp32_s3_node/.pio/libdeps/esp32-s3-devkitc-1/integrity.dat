@@ -1,0 +1,9 @@
+SPI
+bblanchon/ArduinoJson @ ^6.21.3
+knolleary/PubSubClient @ ^2.8
+BLEDevice
+moononournation/GFX Library for Arduino @ 1.6.0
+HTTPClient
+WiFi
+painlessMesh/painlessMesh @ ^1.5.0
+Wire

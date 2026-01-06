@@ -93,12 +93,12 @@ export function ReferenceDetail({ reference, onBack, onSave }: ReferenceDetailPr
             <div className="max-w-2xl mx-auto">
                 <button
                     onClick={onBack}
-                    className="mb-6 px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl shadow-md hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-bold flex items-center gap-2 border border-gray-100 dark:border-gray-700 animate-in slide-in-from-left duration-300"
+                    className="no-print mb-6 px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl shadow-md hover:shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-all font-bold flex items-center gap-2 border border-gray-100 dark:border-gray-700 animate-in slide-in-from-left duration-300"
                 >
                     <span className="text-xl">⬅️</span> Volver al listado
                 </button>
 
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                <div id="printable-area" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
                     <img
                         src={reference.image}
                         alt={reference.code}
@@ -157,15 +157,113 @@ export function ReferenceDetail({ reference, onBack, onSave }: ReferenceDetailPr
                             />
                         </div>
 
-                        <button
-                            onClick={handleSaveClick}
-                            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors"
-                        >
-                            Guardar
-                        </button>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 no-print">
+                            <button
+                                onClick={handleSaveClick}
+                                className="bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                            >
+                                <span>💾</span> Guardar
+                            </button>
+                            <button
+                                onClick={() => window.print()}
+                                className="bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                            >
+                                <span>🖨️</span> Imprimir Local
+                            </button>
+                            <BLEPrintButton reference={reference} />
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    )
+}
+
+// Sub-component for BLE Print logic to keep main component clean
+function BLEPrintButton({ reference }: { reference: Reference }) {
+    const [connecting, setConnecting] = useState(false)
+    const [status, setStatus] = useState<'idle' | 'connecting' | 'connected' | 'sending' | 'error'>('idle')
+
+    const SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b'
+    const DATA_CHAR_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8'
+    const IMAGE_CHAR_UUID = 'ae5946d7-1501-443b-8772-c06d649d5c4b'
+
+    const handleBLEPrint = async () => {
+        try {
+            setConnecting(true)
+            setStatus('connecting')
+
+            // 1. Request Device
+            const bleDevice = await navigator.bluetooth.requestDevice({
+                filters: [{ name: 'DelfinPanel' }],
+                optionalServices: [SERVICE_UUID]
+            })
+
+            const server = await bleDevice.gatt?.connect()
+            if (!server) throw new Error('Could not connect to GATT server')
+
+            const service = await server.getPrimaryService(SERVICE_UUID)
+            const dataChar = await service.getCharacteristic(DATA_CHAR_UUID)
+            const imageChar = await service.getCharacteristic(IMAGE_CHAR_UUID)
+
+            setStatus('sending')
+
+            // 2. Load Image as Bytes
+            const response = await fetch(reference.image)
+            const blob = await response.blob()
+            const arrayBuffer = await blob.arrayBuffer()
+            const bytes = new Uint8Array(arrayBuffer)
+
+            // 3. Start Image Transfer Signal
+            const startCmd = JSON.stringify({ command: 'START_IMAGE', size: bytes.length })
+            await dataChar.writeValue(new TextEncoder().encode(startCmd))
+
+            // 4. Send Image in Chunks (MTU is usually ~20-512 bytes, let's use 200 for safety)
+            const chunkSize = 200
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+                const chunk = bytes.slice(i, i + chunkSize)
+                await imageChar.writeValueWithResponse(chunk)
+                // Small delay to prevent congestion? Bluetooth is slow.
+            }
+
+            // 5. Send Print Command
+            const printCmd = JSON.stringify({ command: 'PRINT' })
+            await dataChar.writeValue(new TextEncoder().encode(printCmd))
+
+            setStatus('connected')
+            alert('¡Enviado a panel con éxito!')
+        } catch (err) {
+            console.error('BLE Error:', err)
+            setStatus('error')
+            alert('Error al conectar con el panel Bluetooth')
+        } finally {
+            setConnecting(false)
+        }
+    }
+
+    const getButtonText = () => {
+        if (connecting) {
+            if (status === 'connecting') return 'Conectando...'
+            if (status === 'sending') return 'Enviando Datos...'
+            return 'Procesando...'
+        }
+        if (status === 'error') return 'Reintentar Panel (BLE)'
+        if (status === 'connected') return '¡Enviado! Reenviar'
+        return 'Enviar a Panel (Bluetooth)'
+    }
+
+    return (
+        <button
+            onClick={handleBLEPrint}
+            disabled={connecting}
+            className={`${connecting ? 'bg-indigo-400' :
+                status === 'error' ? 'bg-red-600 hover:bg-red-700' :
+                    status === 'connected' ? 'bg-green-600 hover:bg-green-700' :
+                        'bg-indigo-600 hover:bg-indigo-700'
+                } text-white py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 sm:col-span-2`}
+        >
+            <span>{connecting ? '⏳' : status === 'error' ? '⚠️' : '📱'}</span>
+            {getButtonText()}
+        </button>
     )
 }

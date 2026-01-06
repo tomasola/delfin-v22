@@ -1,0 +1,18 @@
+Processing esp32-c6-devkitc-1 (platform: espressif32@6.6.0; board: esp32-c6-devkitc-1; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-c6-devkitc-1.html
+PLATFORM: Espressif 32 (6.6.0) > Espressif ESP32-C6-DevKitC-1
+HARDWARE: ESP32C6 160MHz, 512KB RAM, 8MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-builtin, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20014.231204 (2.0.14) 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5
+Error: This board doesn't support arduino framework!
+========================== [FAILED] Took 0.49 seconds ==========================
+
+Environment         Status    Duration
+------------------  --------  ------------
+esp32-c6-devkitc-1  FAILED    00:00:00.490
+==================== 1 failed, 0 succeeded in 00:00:00.490 ====================

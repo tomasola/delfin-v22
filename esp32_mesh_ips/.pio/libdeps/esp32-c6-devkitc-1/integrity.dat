@@ -1,0 +1,7 @@
+knolleary/PubSubClient @ ^2.8
+Wire
+BLEDevice
+SPI
+WiFi
+bblanchon/ArduinoJson @ ^6.21.3
+painlessMesh/painlessMesh @ ^1.5.0

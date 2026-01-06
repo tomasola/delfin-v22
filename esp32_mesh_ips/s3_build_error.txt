@@ -1,0 +1,52 @@
+Processing esp32-s3-devkitc-1 (platform: espressif32 @ 6.6.0; board: esp32-s3-devkitc-1; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-s3-devkitc-1.html
+PLATFORM: Espressif 32 (6.6.0) > Espressif ESP32-S3-DevKitC-1-N8 (8 MB QD, No PSRAM)
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (esp-builtin) On-board (esp-builtin) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20014.231204 (2.0.14) 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5 
+ - toolchain-xtensa-esp32s3 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Library Manager: Installing BLEDevice
+Warning! Could not find the package with 'BLEDevice' requirements for your system 'windows_amd64'
+Found 40 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- painlessMesh @ 1.5.7
+|-- GFX Library for Arduino @ 1.6.0
+|-- ArduinoJson @ 6.21.5
+|-- PubSubClient @ 2.8.0
+|-- Wire @ 2.0.0
+|-- SPI @ 2.0.0
+|-- HTTPClient @ 2.0.0
+|-- WiFi @ 2.0.0
+|-- ESP32 BLE Arduino @ 2.0.0
+|-- SPIFFS @ 2.0.0
+Building in release mode
+Compiling .pio\build\esp32-s3-devkitc-1\src\main.cpp.o
+Building .pio\build\esp32-s3-devkitc-1\bootloader.bin
+esptool.py v4.5.1
+Creating esp32s3 image...
+Merged 1 ELF section
+Successfully created esp32s3 image.
+src/main.cpp: In function 'void loop()':
+src/main.cpp:467:23: error: 'C_WHITE' was not declared in this scope
+     gfx->setTextColor(C_WHITE);
+                       ^~~~~~~
+src/main.cpp:467:23: note: suggested alternative: 'WHITE'
+     gfx->setTextColor(C_WHITE);
+                       ^~~~~~~
+                       WHITE
+Compiling .pio\build\esp32-s3-devkitc-1\FrameworkArduino\FirmwareMSC.cpp.o
+*** [.pio\build\esp32-s3-devkitc-1\src\main.cpp.o] Error 1
+========================= [FAILED] Took 21.81 seconds =========================
+
+Environment         Status    Duration
+------------------  --------  ------------
+esp32-s3-devkitc-1  FAILED    00:00:21.806
+==================== 1 failed, 0 succeeded in 00:00:21.806 ====================

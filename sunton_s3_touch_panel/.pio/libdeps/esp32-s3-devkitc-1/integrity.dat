@@ -1,0 +1,8 @@
+FS
+moononournation/GFX Library for Arduino @ 1.6.0
+SD
+SPI
+bblanchon/ArduinoJson @ ^6.21.3
+lvgl/lvgl @ 8.3.9
+Wire
+WiFi

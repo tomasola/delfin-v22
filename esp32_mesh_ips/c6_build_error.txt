@@ -1,0 +1,313 @@
+Processing esp32-c6-devkitc-1 (platform: https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip; board: esp32-c6-devkitm-1; framework: arduino)
+--------------------------------------------------------------------------------
+Filesystem error in safe_remove_directory_pattern: [WinError 5] Acceso denegado: 'C:\\Users\\tomas\\.platformio\\packages\\framework-arduinoespressif32@src-862afffe99ca01146a6a0c843009d37a\\.git\\objects\\pack\\pack-a0b9eee883d9dead8d018817ca11e708497566da.idx'
+Filesystem error in safe_remove_directory_pattern: [WinError 5] Acceso denegado: 'C:\\Users\\tomas\\.platformio\\packages\\framework-arduinoespressif32@src-862afffe99ca01146a6a0c843009d37a\\.git\\objects\\pack\\pack-a0b9eee883d9dead8d018817ca11e708497566da.idx'
+Verbose mode can be enabled via `-v, --verbose` option
+Filesystem error in safe_remove_directory_pattern: [WinError 5] Acceso denegado: 'C:\\Users\\tomas\\.platformio\\packages\\framework-arduinoespressif32@src-862afffe99ca01146a6a0c843009d37a\\.git\\objects\\pack\\pack-a0b9eee883d9dead8d018817ca11e708497566da.idx'
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-c6-devkitm-1.html
+PLATFORM: Espressif 32 (55.3.34) > Espressif ESP32-C6-DevKitM-1
+HARDWARE: ESP32C6 160MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-builtin, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - contrib-piohome @ 3.4.4 
+ - framework-arduinoespressif32 @ 3.3.4 
+ - framework-arduinoespressif32-libs @ 5.5.0+sha.8410210c9a 
+ - tool-esp-rom-elfs @ 2024.10.11 
+ - tool-esptoolpy @ 5.1.0 
+ - tool-mklittlefs @ 3.2.0 
+ - toolchain-riscv32-esp @ 14.2.0+20250730
+*** WARNING: Windows Long Path Support is disabled ***
+*** Enable it for better performance: ***
+*** 1. Run as Administrator: gpedit.msc ***
+*** 2. Navigate to: Computer Configuration > Administrative Templates > System > Filesystem ***
+*** 3. Enable 'Enable Win32 long paths' ***
+*** OR run PowerShell as Admin: ***
+*** New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1 -PropertyType DWORD -Force ***
+*** Restart required after enabling ***
+*** Applied include path shortening for 305 framework paths ***
+*** Path length reduced from 36213 to ~12821 characters ***
+*** Estimated savings: 22875 characters ***
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 48 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- painlessMesh @ 1.5.7
+|-- ArduinoJson @ 6.21.5
+|-- PubSubClient @ 2.8.0
+|-- BLE @ 3.3.4
+|-- SPIFFS @ 3.3.4
+|-- WiFi @ 3.3.4
+Building in release mode
+Compiling .pio\build\esp32-c6-devkitc-1\lib526\painlessMesh\painlessMeshSTA.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\lib526\painlessMesh\wifi.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\libaf1\BLE\BLESecurity.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\libaf1\BLE\BLEServiceMap.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\libaf1\BLE\BLEUUID.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\libaf1\BLE\BLEUtils.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\libaf1\BLE\BLEValue.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\libaf1\BLE\FreeRTOS.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\libaf1\BLE\GeneralUtils.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\src\main.cpp.o
+Building .pio\build\esp32-c6-devkitc-1\bootloader.bin
+Generating partitions .pio\build\esp32-c6-devkitc-1\partitions.bin
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\ColorFormat.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\Esp.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\FirmwareMSC.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\FunctionalInterrupt.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\HEXBuilder.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\HWCDC.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\HardwareSerial.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\HashBuilder.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\IPAddress.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\MD5Builder.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\MacAddress.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\Print.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\Stream.cpp.o
+esptool v5.1.0
+Creating ESP32C6 image...
+Merged 2 ELF sections.
+Successfully created ESP32C6 image.
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\StreamString.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\Tone.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\USB.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\USBCDC.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\USBMSC.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\WMath.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\WString.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\base64.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\cbuf.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\chip-debug-report.cpp.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-adc.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-bt.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-cpu.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-dac.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-gpio.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-hosted.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-i2c-ng.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-i2c-slave.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-i2c.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-ledc.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-matrix.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-misc.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-periman.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-psram.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-rgb-led.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-rmt.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-sigmadelta.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-spi.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-time.c.o
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-timer.c.o
+In file included from C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/Arduino.h:202,
+                 from C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp:21:
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp: In member function 'virtual uint32_t BLESecurityCallbacks::onPassKeyRequest()':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp:227:3: note: in expansion of macro 'Serial'
+  227 |   Serial.println("BLESecurityCallbacks: *ATTENTION* Using insecure onPassKeyRequest.");
+      |   ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp: In member function 'virtual void BLESecurityCallbacks::onPassKeyNotify(uint32_t)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp:236:3: note: in expansion of macro 'Serial'
+  236 |   Serial.printf("BLESecurityCallbacks: Using default onPassKeyNotify. Passkey: %06lu\n", passkey);
+      |   ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp: In member function 'virtual bool BLESecurityCallbacks::onSecurityRequest()':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp:243:3: note: in expansion of macro 'Serial'
+  243 |   Serial.println("BLESecurityCallbacks: Using default onSecurityRequest. It will accept any security request.");
+      |   ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp: In member function 'virtual bool BLESecurityCallbacks::onConfirmPIN(uint32_t)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp:250:3: note: in expansion of macro 'Serial'
+  250 |   Serial.println("BLESecurityCallbacks: *ATTENTION* Using insecure onConfirmPIN. It will accept any passkey.");
+      |   ^~~~~~
+Compiling .pio\build\esp32-c6-devkitc-1\FrameworkArduino\esp32-hal-tinyusb.c.o
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp: In member function 'virtual bool BLESecurityCallbacks::onAuthorizationRequest(uint16_t, uint16_t, bool)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp:262:3: note: in expansion of macro 'Serial'
+  262 |   Serial.println("BLESecurityCallbacks: *ATTENTION* Using insecure onAuthorizationRequest. It will accept any authorization request.");
+      |   ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp: In member function 'virtual void BLESecurityCallbacks::onAuthenticationComplete(ble_gap_conn_desc*)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/libraries/BLE/src/BLESecurity.cpp:430:3: note: in expansion of macro 'Serial'
+  430 |   Serial.printf("Using default onAuthenticationComplete. Authentication %s.\n", success ? "successful" : "failed");
+      |   ^~~~~~
+*** [.pio\build\esp32-c6-devkitc-1\libaf1\BLE\BLESecurity.cpp.o] Error 1
+In file included from C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/Arduino.h:202,
+                 from .pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/configuration.hpp:1,
+                 from .pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessMeshSTA.cpp:8:
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp: In member function 'void painlessmesh::logger::LogClass::setLogLevel(uint16_t)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp:33:5: note: in expansion of macro 'Serial'
+   33 |     Serial.print(F("\nsetLogLevel:"));
+      |     ^~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp: In member function 'void painlessmesh::logger::LogClass::operator()(painlessmesh::logger::LogLevel, const char*, ...)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp:83:13: note: in expansion of macro 'Serial'
+   83 |             Serial.print(F("ERROR: "));
+      |             ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp:122:7: note: in expansion of macro 'Serial'
+  122 |       Serial.print(str);
+      |       ^~~~~~
+In file included from C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/Arduino.h:202,
+                 from C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/chip-debug-report.cpp:18:
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/chip-debug-report.cpp: In function 'void printBeforeSetupInfo()':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/chip-debug-report.cpp:295:3: note: in expansion of macro 'Serial'
+  295 |   Serial.begin(0);
+      |   ^~~~~~
+In file included from C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/Arduino.h:202,
+                 from .pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/configuration.hpp:1,
+                 from .pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/arduino/wifi.hpp:4,
+                 from .pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/wifi.cpp:1:
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp: In member function 'void painlessmesh::logger::LogClass::setLogLevel(uint16_t)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp:33:5: note: in expansion of macro 'Serial'
+   33 |     Serial.print(F("\nsetLogLevel:"));
+      |     ^~~~~~
+*** [.pio\build\esp32-c6-devkitc-1\FrameworkArduino\chip-debug-report.cpp.o] Error 1
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp: In member function 'void painlessmesh::logger::LogClass::operator()(painlessmesh::logger::LogLevel, const char*, ...)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp:83:13: note: in expansion of macro 'Serial'
+   83 |             Serial.print(F("ERROR: "));
+      |             ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp:122:7: note: in expansion of macro 'Serial'
+  122 |       Serial.print(str);
+      |       ^~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp: In lambda function:
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp:453:31: note: in expansion of macro 'Serial'
+  453 |             Update.printError(Serial);
+      |                               ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp:465:29: note: in expansion of macro 'Serial'
+  465 |           Update.printError(Serial);
+      |                             ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp:506:31: note: in expansion of macro 'Serial'
+  506 |             Update.printError(Serial);
+      |                               ^~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp: In lambda function:
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp:453:31: note: in expansion of macro 'Serial'
+  453 |             Update.printError(Serial);
+      |                               ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp:465:29: note: in expansion of macro 'Serial'
+  465 |           Update.printError(Serial);
+      |                             ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp:506:31: note: in expansion of macro 'Serial'
+  506 |             Update.printError(Serial);
+      |                               ^~~~~~
+*** [.pio\build\esp32-c6-devkitc-1\lib526\painlessMesh\painlessMeshSTA.cpp.o] Error 1
+*** [.pio\build\esp32-c6-devkitc-1\lib526\painlessMesh\wifi.cpp.o] Error 1
+In file included from C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/Arduino.h:202,
+                 from include/localization.h:4,
+                 from src/main.cpp:1:
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp: In member function 'void painlessmesh::logger::LogClass::setLogLevel(uint16_t)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp:33:5: note: in expansion of macro 'Serial'
+   33 |     Serial.print(F("\nsetLogLevel:"));
+      |     ^~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp: In member function 'void painlessmesh::logger::LogClass::operator()(painlessmesh::logger::LogLevel, const char*, ...)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp:83:13: note: in expansion of macro 'Serial'
+   83 |             Serial.print(F("ERROR: "));
+      |             ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/logger.hpp:122:7: note: in expansion of macro 'Serial'
+  122 |       Serial.print(str);
+      |       ^~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp: In lambda function:
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp:453:31: note: in expansion of macro 'Serial'
+  453 |             Update.printError(Serial);
+      |                               ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp:465:29: note: in expansion of macro 'Serial'
+  465 |           Update.printError(Serial);
+      |                             ^~~~~~
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+.pio/libdeps/esp32-c6-devkitc-1/painlessMesh/src/painlessmesh/ota.hpp:506:31: note: in expansion of macro 'Serial'
+  506 |             Update.printError(Serial);
+      |                               ^~~~~~
+src/main.cpp: In function 'void scanBLE(void*)':
+src/main.cpp:93:45: error: conversion from 'BLEScanResults*' to non-scalar type 'BLEScanResults' requested
+   93 |   pBLEScan->setActiveScan(true);
+      |                              ~~~            ^         
+src/main.cpp: In function 'void receivedCallback(uint32_t, String&)':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+src/main.cpp:188:11: note: in expansion of macro 'Serial'
+  188 |                                      trackedDevices[i].anchorDist[1], p3,
+      |           ^     
+src/main.cpp: In function 'void setup()':
+C:/Users/tomas/.platformio/packages/framework-arduinoespressif32@src-fad8bdc53b556ddf04aab84bb19fedc8/cores/esp32/HardwareSerial.h:429:16: error: 'USBSerial' was not declared in this scope; did you mean 'Serial'?
+  429 | #define Serial USBSerial
+      |                ^~~~~~~~~
+src/main.cpp:295:3: note: in expansion of macro 'Serial'
+  295 | #endif
+      |   ^~~~  
+src/main.cpp:296:3: error: 'Wire' was not declared in this scope
+  296 |   return false;
+      |   ^~~~
+*** [.pio\build\esp32-c6-devkitc-1\src\main.cpp.o] Error 1
+========================= [FAILED] Took 29.59 seconds =========================
+
+Environment         Status    Duration
+------------------  --------  ------------
+esp32-c6-devkitc-1  FAILED    00:00:29.590
+==================== 1 failed, 0 succeeded in 00:00:29.590 ====================

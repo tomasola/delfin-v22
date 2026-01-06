@@ -17,6 +17,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedRef, setSelectedRef] = useState<Reference | null>(null)
   const [toasts, setToasts] = useState<ToastMessage[]>([])
+  const [pendingPrint, setPendingPrint] = useState(false)
 
   // Pagination
   const [page, setPage] = useState(1)
@@ -123,6 +124,45 @@ function App() {
     setSelectedCategory(category)
     setSearch('') // Clear search when selecting a category to show full list
   }
+
+  const handlePrint = (ref: Reference) => {
+    if (selectedRef?.code === ref.code) {
+      window.print()
+    } else {
+      setSelectedRef(ref)
+      setPendingPrint(true)
+    }
+  }
+
+  // Handle auto-printing when selectedRef changes due to a print trigger
+  useEffect(() => {
+    if (selectedRef && pendingPrint) {
+      // Need a small timeout to ensure DOM is ready? 
+      // Usually React handles this after render, but let's be safe.
+      const timer = setTimeout(() => {
+        window.print()
+        setPendingPrint(false)
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [selectedRef, pendingPrint])
+
+  // Global Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // ALT + P = Print
+      if (e.altKey && e.key.toLowerCase() === 'p') {
+        e.preventDefault()
+        if (selectedRef) {
+          window.print()
+        } else if (filteredResults.length > 0) {
+          handlePrint(filteredResults[0])
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedRef, filteredResults])
 
   // Show detail view if reference is selected
   if (selectedRef) {
@@ -232,6 +272,7 @@ function App() {
                   key={ref.code}
                   reference={ref}
                   onClick={handleSelectRef}
+                  onPrint={() => handlePrint(ref)}
                 />
               ))}
             </div>

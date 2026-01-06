@@ -1,0 +1,48 @@
+Processing esp32-s3-devkitc-1 (platform: espressif32 @ 6.6.0; board: esp32-s3-devkitc-1; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-s3-devkitc-1.html
+PLATFORM: Espressif 32 (6.6.0) > Espressif ESP32-S3-DevKitC-1-N8 (8 MB QD, No PSRAM)
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (esp-builtin) On-board (esp-builtin) External (cmsis-dap, esp-bridge, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20014.231204 (2.0.14) 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5 
+ - toolchain-xtensa-esp32s3 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Library Manager: Installing BLEDevice
+Warning! Could not find the package with 'BLEDevice' requirements for your system 'windows_amd64'
+Found 40 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- painlessMesh @ 1.5.7
+|-- GFX Library for Arduino @ 1.6.0
+|-- ArduinoJson @ 6.21.5
+|-- PubSubClient @ 2.8.0
+|-- Wire @ 2.0.0
+|-- SPI @ 2.0.0
+|-- HTTPClient @ 2.0.0
+|-- WiFi @ 2.0.0
+|-- ESP32 BLE Arduino @ 2.0.0
+|-- SPIFFS @ 2.0.0
+Building in release mode
+Compiling .pio\build\esp32-s3-devkitc-1\src\main.cpp.o
+Archiving .pio\build\esp32-s3-devkitc-1\libcfd\libpainlessMesh.a
+src/main.cpp: In function 'void scanBLE(void*)':
+src/main.cpp:70:48: error: conversion from 'std::__cxx11::string' {aka 'std::__cxx11::basic_string<char>'} to non-scalar type 'String' requested
+       String mac = device.getAddress().toString();
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~
+src/main.cpp: In function 'void receivedCallback(uint32_t, String&)':
+src/main.cpp:122:7: error: 'saveDevices' was not declared in this scope
+       saveDevices();
+       ^~~~~~~~~~~
+src/main.cpp:122:7: note: suggested alternative: 'trackedDevices'
+       saveDevices();
+       ^~~~~~~~~~~
+       trackedDevices
+Archiving .pio\build\esp32-s3-devkitc-1\lib4cb\libWire.a
+Compiling .pio\build\esp32-s3-devkitc-1\lib911\GFX Library for Arduino\databus\Arduino_ESP32QSPI.cpp.o
+*** [.pio\build\esp32-s3-devkitc-1\src\main.cpp.o] Error 1
+========================== [FAILED] Took 6.26 seconds ==========================

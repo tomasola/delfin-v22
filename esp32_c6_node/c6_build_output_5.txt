@@ -1,0 +1,4 @@
+Processing esp32-c6-devkitc-1 (platform: espressif32; board: esp32-c6-devkitm-1; framework: arduino)
+--------------------------------------------------------------------------------
+Error: Failed to install Python dependencies into penv
+Error: Failed to install Python dependencies (exit code: 2)

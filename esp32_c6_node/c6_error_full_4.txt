@@ -1,0 +1,46 @@
+Processing esp32-c6-devkitc-1 (platform: https://github.com/pioarduino/platform-espressif32/releases/download/stable/platform-espressif32.zip; board: esp32-c6-devkitm-1; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/esp32-c6-devkitm-1.html
+PLATFORM: Espressif 32 (55.3.34) > Espressif ESP32-C6-DevKitM-1
+HARDWARE: ESP32C6 160MHz, 320KB RAM, 4MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-builtin, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - contrib-piohome @ 3.4.4 
+ - framework-arduinoespressif32 @ 3.3.4 
+ - framework-arduinoespressif32-libs @ 5.5.0+sha.8410210c9a 
+ - tool-esp-rom-elfs @ 2024.10.11 
+ - tool-esptoolpy @ 5.1.0 
+ - tool-mklittlefs @ 3.2.0 
+ - toolchain-riscv32-esp @ 14.2.0+20250730
+*** WARNING: Windows Long Path Support is disabled ***
+*** Enable it for better performance: ***
+*** 1. Run as Administrator: gpedit.msc ***
+*** 2. Navigate to: Computer Configuration > Administrative Templates > System > Filesystem ***
+*** 3. Enable 'Enable Win32 long paths' ***
+*** OR run PowerShell as Admin: ***
+*** New-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -Value 1 -PropertyType DWORD -Force ***
+*** Restart required after enabling ***
+*** Applied include path shortening for 305 framework paths ***
+*** Path length reduced from 36139 to ~12747 characters ***
+*** Estimated savings: 22875 characters ***
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Library Manager: Installing BLEDevice
+Warning! Could not find the package with 'BLEDevice' requirements for your system 'windows_amd64'
+Found 48 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- painlessMesh @ 1.5.7
+|-- ArduinoJson @ 6.21.5
+|-- PubSubClient @ 2.8.0
+|-- WiFi @ 3.3.4
+|-- BLE @ 3.3.4
+|-- SPIFFS @ 3.3.4
+Building in release mode
+Compiling .pio\build\esp32-c6-devkitc-1\src\main.cpp.o
+src/main.cpp:106:1: error: expected declaration before '}' token
+  106 | }
+      | ^
+*** [.pio\build\esp32-c6-devkitc-1\src\main.cpp.o] Error 1
+========================== [FAILED] Took 9.50 seconds ==========================
