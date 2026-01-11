@@ -1,14 +1,16 @@
 // Service Worker for offline functionality
-const CACHE_NAME = 'delfin-v2'
+const CACHE_NAME = 'delfin-v3'
 const urlsToCache = [
     '/',
     '/index.html',
     '/logo.webp',
-    '/references.json'
+    '/references.json',
+    '/embeddings.json'
 ]
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
+    self.skipWaiting(); // Force the waiting service worker to become the active service worker.
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
@@ -52,6 +54,7 @@ self.addEventListener('fetch', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
+    event.waitUntil(clients.claim()); // Take control of all open clients immediately.
     const cacheWhitelist = [CACHE_NAME]
 
     event.waitUntil(
