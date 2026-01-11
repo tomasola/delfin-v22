@@ -20,6 +20,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
     const [error, setError] = useState<string | null>(null);
     const [modelLoaded, setModelLoaded] = useState(false);
     const [debugLogs, setDebugLogs] = useState<string[]>([]);
+    const [previewRef, setPreviewRef] = useState<(Reference & { score: number }) | null>(null);
     const requestRef = useRef<number | null>(null);
 
     const addLog = (msg: string) => {
@@ -157,6 +158,11 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
         }
     };
 
+    const handleClose = () => {
+        stopCamera();
+        onClose();
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -164,17 +170,57 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
             {/* Header + Logs */}
             <div className="bg-gray-950 p-3 flex justify-between items-center text-white border-b border-gray-800">
                 <div className="flex flex-col">
-                    <span className="font-bold text-sm">Búsqueda IA v14 (COMPACTO)</span>
+                    <span className="font-bold text-sm">Búsqueda IA v15 (PREVIEW)</span>
                     <div className="flex gap-2 text-[9px] text-green-500 font-mono mt-1">
                         {debugLogs.map((l, i) => <span key={i} className="opacity-70">{l} |</span>)}
                     </div>
                 </div>
-                <button onClick={onClose} className="p-3 text-xl">✕</button>
+                <button onClick={handleClose} className="p-3 text-xl">✕</button>
             </div>
 
             {error && <div className="bg-red-600 p-2 text-white text-[10px] text-center">{error}</div>}
 
             <div className="flex-1 relative flex flex-col items-center justify-center p-2">
+
+                {/* IMAGE PREVIEW OVERLAY */}
+                {previewRef && (
+                    <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 animate-in fade-in duration-200">
+                        <div className="relative w-full max-w-lg flex-1 flex flex-col items-center justify-center">
+                            <img
+                                src={`/images/perfiles/${previewRef.code}.jpg`}
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    if (target.src.includes('.jpg')) {
+                                        target.src = `/images/perfiles/${previewRef.code}.bmp`;
+                                    } else if (target.src.includes('.bmp') && !target.src.includes('/images/')) {
+                                        target.src = `/images/${previewRef.code}.jpg`;
+                                    }
+                                }}
+                                alt={previewRef.code}
+                                className="w-full h-full object-contain max-h-[60vh] rounded-lg shadow-2xl bg-white/5"
+                            />
+                            <div className="mt-4 text-center">
+                                <h2 className="text-2xl font-bold text-white mb-1">{previewRef.code}</h2>
+                                <p className="text-sm text-green-400 font-mono mb-6">Coincidencia: {(previewRef.score * 100).toFixed(1)}%</p>
+
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={() => setPreviewRef(null)}
+                                        className="px-6 py-3 rounded-full bg-gray-700 text-white font-bold active:scale-95 transition-transform"
+                                    >
+                                        ⬅ Volver
+                                    </button>
+                                    <button
+                                        onClick={() => { handleClose(); onSelectRef(previewRef); }}
+                                        className="px-6 py-3 rounded-full bg-blue-600 text-white font-bold active:scale-95 transition-transform shadow-lg shadow-blue-600/30"
+                                    >
+                                        Ver Ficha ➡
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Viewfinder */}
                 {!results.length && !analyzing && (
@@ -237,7 +283,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                             {results.map(ref => (
-                                <div key={ref.code} onClick={() => { onClose(); onSelectRef(ref); }} className="relative bg-gray-900 rounded-lg overflow-hidden active:scale-95 transition-transform border border-white/5 shadow-md">
+                                <div key={ref.code} onClick={() => setPreviewRef(ref)} className="relative bg-gray-900 rounded-lg overflow-hidden active:scale-95 transition-transform border border-white/5 shadow-md">
                                     <img
                                         src={`/images/perfiles/${ref.code}.jpg`}
                                         onError={(e) => {
