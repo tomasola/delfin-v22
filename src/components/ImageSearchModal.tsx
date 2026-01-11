@@ -21,7 +21,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
     const [error, setError] = useState<string | null>(null);
     const [modelLoaded, setModelLoaded] = useState(false);
     const [debugLogs, setDebugLogs] = useState<string[]>([]);
-    const requestRef = useRef<number>();
+    const requestRef = useRef<number | null>(null);
 
     const addLog = (msg: string) => {
         console.log("[DEBUG]", msg);
