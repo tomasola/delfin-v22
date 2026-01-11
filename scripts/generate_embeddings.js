@@ -5,6 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sharp from 'sharp';
+import '@tensorflow/tfjs-backend-wasm';
+import { setBackend } from '@tensorflow/tfjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,6 +16,8 @@ const IMAGES_DIR = path.join(ROOT_DIR, 'public', 'images');
 const OUTPUT_FILE = path.join(ROOT_DIR, 'public', 'embeddings.json');
 
 async function main() {
+    console.log('Setting backend to WASM...');
+    await setBackend('wasm');
     console.log('Loading MobileNet model...');
     const model = await mobilenet.load({ version: 2, alpha: 1.0 });
     console.log('Model loaded.');
