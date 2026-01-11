@@ -1,7 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { findMatches, loadResources } from '../services/visualSearch';
-import { ReferenceCard } from './ReferenceCard';
 import type { Reference } from '../types';
 
 interface ImageSearchModalProps {
@@ -13,7 +12,9 @@ interface ImageSearchModalProps {
 
 export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }: ImageSearchModalProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const resultCanvasRef = useRef<HTMLCanvasElement>(null); // For AI
+    const previewCanvasRef = useRef<HTMLCanvasElement>(null); // For UI
+
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [analyzing, setAnalyzing] = useState(false);
     const [results, setResults] = useState<(Reference & { score: number })[]>([]);
@@ -23,22 +24,22 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
     const requestRef = useRef<number>();
 
     const addLog = (msg: string) => {
-        console.log(msg);
+        console.log("[DEBUG]", msg);
         setDebugLogs(prev => [...prev.slice(-4), msg]);
     };
 
-    // Initial load of model
+    // Model loading
     useEffect(() => {
         if (isOpen) {
-            addLog("Modal opened via Camera button");
+            addLog("v5: Modal Open");
             loadResources()
                 .then(() => {
                     setModelLoaded(true);
-                    addLog("AI Model loaded");
+                    addLog("v5: AI Ready");
                 })
                 .catch(err => {
-                    setError('Error cargando modelo de IA');
-                    addLog("Error loading model: " + err.message);
+                    setError('Error IA: ' + err.message);
+                    addLog("v5: AI Error: " + err.message);
                 });
             startCamera();
         } else {
@@ -46,33 +47,25 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
             setResults([]);
             setError(null);
             setAnalyzing(false);
-            setDebugLogs([]);
         }
-        return () => stopCamera();
     }, [isOpen]);
 
-    // Live Preview Loop for the small IA window
+    // Live UI Preview Loop
     const drawPreview = () => {
-        if (videoRef.current && canvasRef.current && stream) {
+        if (videoRef.current && previewCanvasRef.current && stream) {
             const video = videoRef.current;
-            const canvas = canvasRef.current;
+            const canvas = previewCanvasRef.current;
             const ctx = canvas.getContext('2d');
 
             if (ctx && video.videoWidth > 0) {
-                // Same logic as captureAndSearch
                 const minDim = Math.min(video.videoWidth, video.videoHeight);
-                const size = minDim * 0.5;
+                const size = minDim * 0.5; // Sync with logic
                 const startX = (video.videoWidth - size) / 2;
                 const startY = (video.videoHeight - size) / 2;
 
-                canvas.width = 224;
-                canvas.height = 224;
-
-                ctx.drawImage(
-                    video,
-                    startX, startY, size, size,
-                    0, 0, 224, 224
-                );
+                canvas.width = 160; // Low res for preview
+                canvas.height = 160;
+                ctx.drawImage(video, startX, startY, size, size, 0, 0, 160, 160);
             }
         }
         requestRef.current = requestAnimationFrame(drawPreview);
@@ -81,83 +74,43 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
     useEffect(() => {
         if (stream) {
             requestRef.current = requestAnimationFrame(drawPreview);
-        } else if (requestRef.current) {
-            cancelAnimationFrame(requestRef.current);
         }
-        return () => {
-            if (requestRef.current) cancelAnimationFrame(requestRef.current);
-        };
-    }, [stream]);
-
-    // Handle stream attachment
-    useEffect(() => {
-        if (videoRef.current && stream) {
-            addLog("Attaching stream to video element");
-            videoRef.current.srcObject = stream;
-            videoRef.current.onloadedmetadata = () => {
-                addLog(`Video metadata loaded: ${videoRef.current?.videoWidth}x${videoRef.current?.videoHeight}`);
-                videoRef.current?.play()
-                    .then(() => addLog("Video playing successfully"))
-                    .catch(e => addLog("Play error: " + e.message));
-            };
-        }
+        return () => { if (requestRef.current) cancelAnimationFrame(requestRef.current); };
     }, [stream]);
 
     const startCamera = async () => {
         try {
             setError(null);
-            addLog("Requesting camera access...");
-
-            let mediaStream: MediaStream;
-            try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' },
-                    audio: false
-                });
-                addLog("Environment camera acquired");
-            } catch (e: any) {
-                addLog("Env camera failed, trying default");
-                mediaStream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: false
-                });
-                addLog("Default camera acquired");
-            }
+            addLog("v5: Start Camera...");
+            const mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' },
+                audio: false
+            }).catch(() => navigator.mediaDevices.getUserMedia({ video: true, audio: false }));
 
             setStream(mediaStream);
+            addLog("v5: Stream set");
         } catch (err: any) {
-            setError('No se pudo acceder a la cámara. ' + (err.message || 'Error desconocido'));
-            addLog("Camera error: " + err.message);
+            setError('Error Cámara: ' + err.message);
+            addLog("v5: Cam Error: " + err.message);
         }
     };
 
     const stopCamera = () => {
         if (stream) {
-            stream.getTracks().forEach(track => track.stop());
+            stream.getTracks().forEach(t => t.stop());
             setStream(null);
-            addLog("Camera stopped");
+            addLog("v5: Cam Stopped");
         }
     };
 
     const captureAndSearch = async () => {
-        if (!videoRef.current || !canvasRef.current || !modelLoaded) return;
-
+        if (!videoRef.current || !resultCanvasRef.current || !modelLoaded) return;
         setAnalyzing(true);
         setError(null);
 
         try {
             const video = videoRef.current;
-            const canvas = canvasRef.current;
-
-            addLog(`Capture: Video size ${video.videoWidth}x${video.videoHeight}`);
-
-            if (video.videoWidth === 0 || video.videoHeight === 0) {
-                addLog("Video dimensions 0x0 - ABORTING");
-                setAnalyzing(false);
-                return;
-            }
-
-            // Calculate Crop (Center Square 50%)
+            const canvas = resultCanvasRef.current;
             const minDim = Math.min(video.videoWidth, video.videoHeight);
             const size = minDim * 0.5;
             const startX = (video.videoWidth - size) / 2;
@@ -166,171 +119,114 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
             canvas.width = 224;
             canvas.height = 224;
             const ctx = canvas.getContext('2d');
-
             if (ctx) {
-                ctx.filter = 'none'; // Sync with color DB
+                ctx.filter = 'none';
                 ctx.drawImage(video, startX, startY, size, size, 0, 0, 224, 224);
-
-                addLog("Analyzing 50% crop...");
+                addLog("v5: Analyzing...");
                 const matches = await findMatches(canvas, 10);
-
-                const fullResults = matches.map(match => {
-                    const ref = allReferences.find(r => r.code === match.code);
-                    return ref ? { ...ref, score: match.score } : null;
+                const fullResults = matches.map(m => {
+                    const ref = allReferences.find(r => r.code === m.code);
+                    return ref ? { ...ref, score: m.score } : null;
                 }).filter(Boolean) as (Reference & { score: number })[];
-
                 setResults(fullResults);
                 stopCamera();
             }
         } catch (err: any) {
-            setError('Error analizando la imagen.');
-            addLog("Analysis error: " + err.message);
+            setError('Error Análisis: ' + err.message);
         } finally {
             setAnalyzing(false);
         }
     };
 
-    const handleRetake = () => {
-        setResults([]);
-        startCamera();
-    };
-
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-95 flex flex-col animate-in fade-in duration-200">
-            {/* Header */}
-            <div className="p-4 flex justify-between items-center text-white bg-gray-900 border-b border-gray-800">
-                <h2 className="text-lg font-bold">📷 Búsqueda Visual</h2>
-                <button onClick={onClose} className="p-2 text-2xl hover:text-gray-300">✕</button>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-                <div className="p-4 bg-red-600 text-white text-center text-sm font-bold animate-pulse">
-                    {error}
+        <div className="fixed inset-0 z-50 bg-black flex flex-col items-stretch overflow-hidden">
+            {/* Header + Logs */}
+            <div className="bg-gray-950 p-3 flex justify-between items-center text-white border-b border-gray-800">
+                <div className="flex flex-col">
+                    <span className="font-bold text-sm">Búsqueda IA v5</span>
+                    <div className="flex gap-2 text-[9px] text-green-500 font-mono mt-1">
+                        {debugLogs.map((l, i) => <span key={i} className="opacity-70">{l} |</span>)}
+                    </div>
                 </div>
-            )}
-
-            {/* DEBUG CONSOLE (Green) */}
-            <div className="bg-black/80 text-green-400 text-[10px] font-mono p-2 border-b border-gray-700 max-h-24 overflow-y-auto">
-                {debugLogs.map((log, i) => (
-                    <div key={i}>{'> ' + log}</div>
-                ))}
+                <button onClick={onClose} className="p-3 text-xl">✕</button>
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 overflow-hidden p-4 flex flex-col items-center justify-center">
+            {error && <div className="bg-red-600 p-2 text-white text-[10px] text-center">{error}</div>}
 
-                {/* Camera Viewfinder */}
+            <div className="flex-1 relative flex flex-col items-center justify-center p-4">
+
+                {/* Viewfinder */}
                 {!results.length && !analyzing && (
-                    <div className="relative w-full max-w-sm aspect-[1/1] bg-gray-950 rounded-2xl overflow-hidden shadow-2xl border-2 border-gray-800">
-                        {stream ? (
+                    <div className="relative w-full max-w-xs aspect-square bg-gray-900 rounded-3xl overflow-hidden border-2 border-white/10 shadow-2xl">
+                        {stream && (
                             <video
                                 ref={videoRef}
-                                autoPlay
-                                playsInline
-                                muted
+                                autoPlay playsInline muted
+                                onLoadedMetadata={() => {
+                                    videoRef.current?.play();
+                                    addLog("Video Play");
+                                }}
                                 className="absolute inset-0 w-full h-full object-cover"
                             />
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-gray-500 italic">
-                                {error ? 'Cámara no disponible' : 'Iniciando cámara...'}
-                            </div>
                         )}
 
-                        {/* HOLE OVERLAY (Safer 4-div approach) */}
+                        {/* Overlay Guidelines */}
                         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                            {/* Black masks */}
-                            <div className="absolute top-0 inset-x-0 h-[25%] bg-black/60"></div>
-                            <div className="absolute bottom-0 inset-x-0 h-[25%] bg-black/60"></div>
-                            <div className="absolute left-0 top-[25%] bottom-[25%] w-[25%] bg-black/60"></div>
-                            <div className="absolute right-0 top-[25%] bottom-[25%] w-[25%] bg-black/60"></div>
-
-                            {/* The Guideline Box (50% center) */}
-                            <div className="w-[50%] h-[50%] border-2 border-red-500 rounded-lg shadow-lg relative">
-                                <div className="absolute top-1/2 left-0 w-full h-px bg-red-500/40"></div>
-                                <div className="absolute left-1/2 top-0 h-full w-px bg-red-500/40"></div>
-                                <div className="absolute -top-6 left-0 right-0 text-center text-red-500 text-[9px] font-bold uppercase tracking-wider">
-                                    Encuadra aquí
-                                </div>
-                            </div>
+                            <div className="absolute top-0 inset-x-0 h-[25%] bg-black/50"></div>
+                            <div className="absolute bottom-0 inset-x-0 h-[25%] bg-black/50"></div>
+                            <div className="absolute left-0 top-[25%] bottom-[25%] w-[25%] bg-black/50"></div>
+                            <div className="absolute right-0 top-[25%] bottom-[25%] w-[25%] bg-black/50"></div>
+                            <div className="w-[50%] h-[50%] border-2 border-red-500 rounded shadow-[0_0_20px_rgba(239,68,68,0.3)]"></div>
                         </div>
 
-                        {/* IA Preview (Live) */}
-                        <div className="absolute top-2 right-2 w-20 h-20 border border-white/30 rounded-lg overflow-hidden shadow-2xl bg-black/80 z-30">
-                            <div className="absolute top-0 inset-x-0 bg-black/70 text-[7px] text-white text-center py-0.5 font-bold uppercase">Vista IA</div>
-                            <canvas
-                                ref={canvasRef}
-                                className="w-full h-full bg-black"
-                            />
+                        {/* IA Preview */}
+                        <div className="absolute top-2 right-2 w-16 h-16 bg-black border border-white/20 rounded-md overflow-hidden z-20">
+                            <canvas ref={previewCanvasRef} className="w-full h-full" />
                         </div>
 
-                        {/* Capture Button */}
-                        <div className="absolute bottom-4 inset-x-0 flex justify-center z-40">
+                        {/* Shutter */}
+                        <div className="absolute bottom-4 inset-x-0 flex justify-center">
                             <button
                                 onClick={captureAndSearch}
                                 disabled={!stream || !modelLoaded}
-                                className="bg-white p-1 rounded-full shadow-2xl active:scale-90 transition-transform disabled:opacity-50"
+                                className="bg-white p-1 rounded-full active:scale-90 transition-transform disabled:opacity-30"
                             >
-                                <div className="bg-black/5 rounded-full p-2 border-2 border-gray-200">
-                                    <div className={`w-12 h-12 rounded-full ${modelLoaded ? 'bg-red-500' : 'bg-gray-400'}`}></div>
+                                <div className="p-1 border-2 border-gray-200 rounded-full">
+                                    <div className={`w-12 h-12 rounded-full ${modelLoaded ? 'bg-red-600' : 'bg-gray-400'}`}></div>
                                 </div>
                             </button>
                         </div>
 
                         {!modelLoaded && !error && (
-                            <div className="absolute top-2 left-2 bg-black/70 text-white text-[9px] py-1 px-3 rounded-full backdrop-blur-md animate-pulse">
-                                CARGANDO IA...
-                            </div>
+                            <div className="absolute top-2 left-2 text-[8px] text-white bg-black/40 px-2 py-0.5 rounded-full animate-pulse">CARGANDO...</div>
                         )}
                     </div>
                 )}
 
-                {/* ANALYZING STATE */}
+                {/* Status */}
                 {analyzing && (
-                    <div className="flex flex-col items-center justify-center space-y-4">
-                        <div className="relative">
-                            <div className="w-20 h-20 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-2xl animate-bounce">🔍</span>
-                            </div>
-                        </div>
-                        <div className="text-center">
-                            <h3 className="text-xl font-bold text-white">Analizando...</h3>
-                            <p className="text-gray-400 text-sm">Buscando en el catálogo Delfín</p>
-                        </div>
+                    <div className="text-white flex flex-col items-center animate-pulse">
+                        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <span className="font-bold">Analizando Perfil...</span>
                     </div>
                 )}
 
-                {/* RESULTS */}
+                {/* Results */}
                 {results.length > 0 && (
-                    <div className="w-full max-w-4xl animate-in slide-in-from-bottom-4 duration-300">
-                        <div className="flex justify-between items-center mb-6 px-2">
-                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                <span className="text-green-500 opacity-50">●</span> Coincidencias ({results.length})
-                            </h3>
-                            <button
-                                onClick={handleRetake}
-                                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl text-xs font-bold transition-colors border border-white/10"
-                            >
-                                📸 Volver a intentar
-                            </button>
+                    <div className="w-full flex-1 overflow-y-auto pt-4 pb-20">
+                        <div className="flex justify-between items-center mb-4 px-2">
+                            <h3 className="text-white font-bold">Resultados</h3>
+                            <button onClick={() => { setResults([]); startCamera(); }} className="text-xs bg-white/10 text-white px-3 py-1.5 rounded-lg active:scale-95">Reintentar</button>
                         </div>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-2 gap-3">
                             {results.map(ref => (
-                                <div key={ref.code} className="relative">
-                                    <ReferenceCard
-                                        reference={ref}
-                                        onClick={() => {
-                                            onClose();
-                                            onSelectRef(ref);
-                                        }}
-                                        onPrint={() => { }}
-                                    />
-                                    <div className="absolute top-1 right-1 bg-green-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-lg pointer-events-none">
-                                        {(ref.score * 100).toFixed(0)}%
+                                <div key={ref.code} onClick={() => { onClose(); onSelectRef(ref); }} className="relative bg-gray-900 rounded-xl overflow-hidden active:scale-95 transition-transform border border-white/5 shadow-lg">
+                                    <img src={`/images/perfiles/${ref.code}.bmp`} alt={ref.code} className="w-full h-32 object-contain p-2 bg-white" />
+                                    <div className="p-2">
+                                        <div className="font-bold text-white text-sm">{ref.code}</div>
+                                        <div className="text-[10px] text-green-500 font-bold">Probabilidad: {(ref.score * 100).toFixed(0)}%</div>
                                     </div>
                                 </div>
                             ))}
@@ -338,6 +234,8 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
                     </div>
                 )}
             </div>
+            {/* Hidden capture canvas */}
+            <canvas ref={resultCanvasRef} className="hidden" />
         </div>
     );
 }
