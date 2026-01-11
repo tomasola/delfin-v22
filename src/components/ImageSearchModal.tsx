@@ -1,5 +1,4 @@
-
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { findMatches, loadResources } from '../services/visualSearch';
 import type { Reference } from '../types';
 
@@ -11,7 +10,7 @@ interface ImageSearchModalProps {
 }
 
 export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }: ImageSearchModalProps) {
-    const videoRef = useRef<HTMLVideoElement>(null);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
     const resultCanvasRef = useRef<HTMLCanvasElement>(null); // For AI
     const previewCanvasRef = useRef<HTMLCanvasElement>(null); // For UI
 
@@ -71,6 +70,26 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
         requestRef.current = requestAnimationFrame(drawPreview);
     };
 
+    // Callback ref to ensure video IS mounted when we try to play
+    const onVideoRef = useCallback((node: HTMLVideoElement | null) => {
+        videoRef.current = node;
+        if (node && stream) {
+            addLog(`v5: Video mount. Active: ${stream.active}`);
+
+            // Assign only if not already assigned
+            if (node.srcObject !== stream) {
+                node.srcObject = stream;
+
+                // Set handler directly to capture the event reliably
+                node.onloadedmetadata = () => {
+                    addLog("v5: Metadata loaded, play");
+                    node.play().catch(e => addLog("v5: Play Err: " + e));
+                };
+            }
+        }
+    }, [stream]); // Recreate if stream changes
+
+    // Animation Loop
     useEffect(() => {
         if (stream) {
             requestRef.current = requestAnimationFrame(drawPreview);
@@ -145,7 +164,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
             {/* Header + Logs */}
             <div className="bg-gray-950 p-3 flex justify-between items-center text-white border-b border-gray-800">
                 <div className="flex flex-col">
-                    <span className="font-bold text-sm">Búsqueda IA v5</span>
+                    <span className="font-bold text-sm">Búsqueda IA v12 (DEBUG)</span>
                     <div className="flex gap-2 text-[9px] text-green-500 font-mono mt-1">
                         {debugLogs.map((l, i) => <span key={i} className="opacity-70">{l} |</span>)}
                     </div>
@@ -162,12 +181,8 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
                     <div className="relative w-full max-w-xs aspect-square bg-gray-900 rounded-3xl overflow-hidden border-2 border-white/10 shadow-2xl">
                         {stream && (
                             <video
-                                ref={videoRef}
+                                ref={onVideoRef}
                                 autoPlay playsInline muted
-                                onLoadedMetadata={() => {
-                                    videoRef.current?.play();
-                                    addLog("Video Play");
-                                }}
                                 className="absolute inset-0 w-full h-full object-cover"
                             />
                         )}
