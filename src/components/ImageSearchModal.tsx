@@ -122,13 +122,29 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
                 return;
             }
 
-            // Draw video frame to canvas
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+            // Calculate Crop (Center Square 60% of minimum dimension)
+            const minDim = Math.min(video.videoWidth, video.videoHeight);
+            const size = minDim * 0.6;
+            const startX = (video.videoWidth - size) / 2;
+            const startY = (video.videoHeight - size) / 2;
+
+            // Prepare Canvas (MobileNet expects 224x224)
+            canvas.width = 224;
+            canvas.height = 224;
             const ctx = canvas.getContext('2d');
+
             if (ctx) {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                addLog("Frame drawn to canvas");
+                // Apply Image Processing: High Contrast B&W
+                ctx.filter = 'grayscale(100%) contrast(250%) brightness(120%)';
+
+                // Draw clipped video to canvas
+                ctx.drawImage(
+                    video,
+                    startX, startY, size, size, // Source Crop
+                    0, 0, 224, 224 // Dest Resize
+                );
+
+                addLog("Frame cropped & filtered");
 
                 const matches = await findMatches(canvas);
                 addLog(`Matches found: ${matches.length}`);
@@ -199,11 +215,21 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
                             </div>
                         )}
 
-                        {/* Overlay Guidelines */}
-                        <div className="absolute inset-0 border-2 border-white/30 pointer-events-none m-8 rounded-lg border-dashed"></div>
+                        {/* Overlay Guidelines - Center Box */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="w-64 h-64 border-2 border-red-500 rounded-lg shadow-[0_0_0_9999px_rgba(0,0,0,0.6)]">
+                                {/* Crosshair */}
+                                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-red-500/50"></div>
+                                <div className="absolute left-1/2 top-0 h-full w-0.5 bg-red-500/50"></div>
+                                {/* Tip label */}
+                                <div className="absolute -top-10 left-0 right-0 text-center text-red-500 text-xs font-bold uppercase tracking-widest bg-black/40 py-1 rounded">
+                                    Encuadra el perfil aquí
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Capture Button */}
-                        <div className="absolute bottom-6 inset-x-0 flex justify-center">
+                        <div className="absolute bottom-6 inset-x-0 flex justify-center z-10">
                             <button
                                 onClick={captureAndSearch}
                                 disabled={!stream || !modelLoaded}
