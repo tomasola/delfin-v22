@@ -21,6 +21,7 @@ function App() {
   const [pendingPrint, setPendingPrint] = useState(false)
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [recentRefs, setRecentRefs] = useState<Reference[]>([])
+  const [userRefMap, setUserRefMap] = useState<Record<string, { embedding: number[], image: string }>>({})
 
   // Pagination
   const [page, setPage] = useState(1)
@@ -176,6 +177,14 @@ function App() {
     })
   }
 
+  const handleLinkReference = (code: string, capture: { embedding: number[], image: string }) => {
+    setUserRefMap(prev => ({
+      ...prev,
+      [code]: capture
+    }))
+    addToast('Referencia personalizada vinculada', 'success')
+  }
+
   // Auto-cleanup for old Service Workers (v2 -> v7 transition)
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -217,6 +226,7 @@ function App() {
           reference={selectedRef}
           onBack={handleBack}
           onSave={handleSave}
+          userRefMap={userRefMap}
         />
         <ToastContainer messages={toasts} onClose={removeToast} />
       </>
@@ -301,6 +311,8 @@ function App() {
           onClose={() => setShowImageSearch(false)}
           onSelectRef={handleSelectRef}
           allReferences={references}
+          userRefMap={userRefMap}
+          onLinkReference={handleLinkReference}
         />
 
         {/* Category filter */}
@@ -326,6 +338,7 @@ function App() {
                   reference={ref}
                   onClick={handleSelectRef}
                   onPrint={() => handlePrint(ref)}
+                  userRefMap={userRefMap}
                 />
               ))}
             </div>
@@ -393,6 +406,7 @@ function App() {
                         reference={ref}
                         onClick={handleSelectRef}
                         onPrint={() => handlePrint(ref)}
+                        userRefMap={userRefMap}
                       />
                     </div>
                   ))}

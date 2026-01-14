@@ -5,13 +5,19 @@ interface RobustImageProps {
     className?: string;
     style?: React.CSSProperties;
     priority?: 'jpg' | 'bmp';
+    userRefMap?: Record<string, { image: string }>;
 }
 
-export const RobustImage = ({ code, className, style, priority = 'jpg' }: RobustImageProps) => {
+export const RobustImage = ({ code, className, style, priority = 'jpg', userRefMap }: RobustImageProps) => {
     const getSafeImageSrc = (code: string, p: 'jpg' | 'bmp') => {
-        return p === 'jpg'
+        const baseSources = p === 'jpg'
             ? [`/images/perfiles/${code}.jpg`, `/images/perfiles/${code}.bmp`, `/images/${code}.jpg`, `/images/${code}.bmp`]
             : [`/images/perfiles/${code}.bmp`, `/images/perfiles/${code}.jpg`, `/images/${code}.bmp`, `/images/${code}.jpg`];
+
+        if (userRefMap && userRefMap[code]) {
+            return [userRefMap[code].image, ...baseSources];
+        }
+        return baseSources;
     };
 
     const [srcIdx, setSrcIdx] = useState(0);

@@ -3,27 +3,29 @@ import { RobustImage } from './RobustImage';
 
 interface ReferenceCardProps {
     reference: Reference;
-    onClick?: (ref: Reference) => void;
-    onPrint?: (e: React.MouseEvent) => void;
+    onClick: (ref: Reference) => void;
+    onPrint: () => void;
+    userRefMap?: Record<string, { image: string }>;
 }
 
-export const ReferenceCard = ({ reference, onClick, onPrint }: ReferenceCardProps) => {
+export function ReferenceCard({ reference, onClick, onPrint, userRefMap }: ReferenceCardProps) {
     return (
         <div
-            onClick={() => onClick?.(reference)}
+            onClick={() => onClick(reference)}
             className="group relative bg-[#1a1a1a] rounded-xl overflow-hidden border border-white/5 hover:border-blue-500/50 shadow-lg active:scale-[0.98] transition-all duration-200 cursor-pointer flex flex-col"
         >
             <div className="relative aspect-video bg-white flex items-center justify-center p-2 overflow-hidden">
                 <RobustImage
                     code={reference.code}
-                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                    className="w-full h-full object-contain"
+                    userRefMap={userRefMap}
                 />
 
                 {onPrint && (
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            onPrint(e);
+                            onPrint();
                         }}
                         className="absolute bottom-2 right-2 p-2 bg-blue-600/90 backdrop-blur-md text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity active:scale-90 border border-white/20"
                     >
