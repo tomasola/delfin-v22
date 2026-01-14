@@ -1,42 +1,41 @@
-import type { Reference } from '../types'
+import type { Reference } from '../types';
+import { RobustImage } from './RobustImage';
 
 interface ReferenceCardProps {
-    reference: Reference
-    onClick: (ref: Reference) => void
-    onPrint: () => void
+    reference: Reference;
+    onClick?: () => void;
+    onPrint?: (e: React.MouseEvent) => void;
 }
 
-export function ReferenceCard({ reference, onClick, onPrint }: ReferenceCardProps) {
+export const ReferenceCard = ({ reference, onClick, onPrint }: ReferenceCardProps) => {
     return (
         <div
-            className="border rounded-lg p-3 hover:shadow-md hover:border-blue-400 transition-all text-left group bg-white dark:bg-gray-800 relative"
+            onClick={onClick}
+            className="group relative bg-[#1a1a1a] rounded-xl overflow-hidden border border-white/5 hover:border-blue-500/50 shadow-lg active:scale-[0.98] transition-all duration-200 cursor-pointer flex flex-col"
         >
-            <div
-                onClick={() => onClick(reference)}
-                className="cursor-pointer"
-            >
-                <div className="relative overflow-hidden rounded mb-2">
-                    <img
-                        src={reference.image}
-                        alt={reference.code}
-                        loading="lazy"
-                        className="w-full h-24 md:h-32 object-cover group-hover:scale-105 transition-transform duration-200"
-                    />
-                </div>
-                <p className="font-semibold text-sm truncate dark:text-white">{reference.code}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{reference.category}</p>
+            <div className="relative aspect-video bg-white flex items-center justify-center p-2 overflow-hidden">
+                <RobustImage
+                    code={reference.code}
+                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                />
+
+                {onPrint && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onPrint(e);
+                        }}
+                        className="absolute bottom-2 right-2 p-2 bg-blue-600/90 backdrop-blur-md text-white rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity active:scale-90 border border-white/20"
+                    >
+                        🖨️
+                    </button>
+                )}
             </div>
 
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onPrint();
-                }}
-                className="absolute top-2 right-2 p-2 bg-white/90 dark:bg-gray-800/90 rounded-full shadow-md hover:bg-white dark:hover:bg-gray-700 transition-colors border border-gray-100 dark:border-gray-600 group/print"
-                title="Imprimir etiqueta"
-            >
-                <span className="text-lg group-hover/print:scale-110 transition-transform inline-block">🖨️</span>
-            </button>
+            <div className="p-3 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a]">
+                <div className="text-[10px] text-blue-400 font-bold tracking-wider uppercase mb-0.5">{reference.category}</div>
+                <div className="text-sm font-bold text-white truncate">{reference.code}</div>
+            </div>
         </div>
-    )
-}
+    );
+};

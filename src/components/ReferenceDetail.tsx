@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import type { Reference, ReferenceData } from '../types'
 import { getReferenceData, saveReferenceData } from '../services/db'
 import { PasswordModal } from './PasswordModal'
+import { RobustImage } from './RobustImage'
 
 interface ReferenceDetailProps {
     reference: Reference
@@ -99,12 +100,13 @@ export function ReferenceDetail({ reference, onBack, onSave }: ReferenceDetailPr
                 </button>
 
                 <div id="printable-area" className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                    <img
-                        src={reference.image}
-                        alt={reference.code}
-                        loading="lazy"
-                        className="w-full max-h-64 object-contain rounded mb-4"
-                    />
+                    <div className="w-full bg-white rounded-xl p-4 shadow-inner mb-6 relative overflow-hidden group">
+                        <RobustImage
+                            code={reference.code}
+                            className="w-full max-h-80 object-contain group-hover:scale-105 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-gray-900/10 to-transparent pointer-events-none"></div>
+                    </div>
                     <h2 className="text-2xl font-bold mb-2 dark:text-white">{reference.code}</h2>
                     <p className="text-gray-600 dark:text-gray-400 mb-6">{reference.category}</p>
 

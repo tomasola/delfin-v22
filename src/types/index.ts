@@ -4,6 +4,7 @@ export interface Reference {
     code: string
     image: string
     category: string
+    embedding?: number[]
 }
 
 export interface ReferenceData {
