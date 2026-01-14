@@ -28,7 +28,6 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
     const [comparisonRefCode, setComparisonRefCode] = useState<string | null>(null);
     const [debugLogs, setDebugLogs] = useState<string[]>([]);
     const [previewRef, setPreviewRef] = useState<(Reference & { score: number }) | null>(null);
-    const [zoomLevel, setZoomLevel] = useState(1);
     const requestRef = useRef<number | null>(null);
     const [lastCapture, setLastCapture] = useState<{ embedding: number[], image: string } | null>(null);
 
@@ -253,13 +252,6 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
                 {/* 1. IMAGE PREVIEW OVERLAY (The floating window) */}
                 {previewRef && (
                     <div className="absolute inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 animate-in fade-in duration-200">
-                        {/* ZOOM CONTROLS (Keep for catalog image or general view) */}
-                        <div className="absolute top-4 right-4 flex flex-col gap-4 z-50">
-                            <button onClick={() => setZoomLevel(prev => Math.min(prev + 1, 4))} className="w-14 h-14 bg-blue-600 rounded-xl text-white text-2xl font-bold shadow-lg border-2 border-white/20 active:scale-95 flex items-center justify-center">➕</button>
-                            <button onClick={() => setZoomLevel(1)} className="w-14 h-14 bg-gray-700 rounded-xl text-white text-xl font-bold shadow-lg border-2 border-white/20 active:scale-95 flex items-center justify-center">↺</button>
-                            <button onClick={() => setZoomLevel(prev => Math.max(prev - 1, 1))} className="w-14 h-14 bg-blue-600 rounded-xl text-white text-2xl font-bold shadow-lg border-2 border-white/20 active:scale-95 flex items-center justify-center">➖</button>
-                        </div>
-
                         <div className="relative w-full max-w-lg flex flex-col items-center justify-center h-full">
                             <div className="flex-1 w-full flex flex-col gap-4 overflow-auto p-2">
                                 <span className="text-white text-xs font-bold uppercase tracking-widest text-center">Confirmación Visual</span>
@@ -314,7 +306,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
                                     </div>
 
                                     <div className="flex gap-4">
-                                        <button onClick={() => { setZoomLevel(1); setPreviewRef(null); }} className="flex-1 py-4 rounded-xl bg-gray-800 text-white font-bold text-sm border border-white/10 active:bg-gray-700 transition-colors uppercase tracking-widest flex items-center justify-center gap-2">
+                                        <button onClick={() => { setPreviewRef(null); }} className="flex-1 py-4 rounded-xl bg-gray-800 text-white font-bold text-sm border border-white/10 active:bg-gray-700 transition-colors uppercase tracking-widest flex items-center justify-center gap-2">
                                             <span>⬅️</span> Volver
                                         </button>
                                         <button onClick={() => { handleClose(); onSelectRef(previewRef); }} className="flex-1 py-4 rounded-xl bg-blue-600 text-white font-bold text-sm border border-blue-400/50 shadow-[0_0_20px_rgba(37,99,235,0.4)] active:bg-blue-500 transition-all uppercase tracking-widest flex items-center justify-center gap-2">
