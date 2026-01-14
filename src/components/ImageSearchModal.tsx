@@ -210,6 +210,32 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
         await startCamera();
     };
 
+    const handleLinkCapture = (refCode: string) => {
+        if (!lastCapture || !previewRef) return;
+
+        // Save to map
+        setUserRefMap(prev => ({
+            ...prev,
+            [refCode]: lastCapture
+        }));
+
+        const refinedRef = { ...previewRef, embedding: lastCapture.embedding };
+        addLog("v18: Linked capture to " + refCode);
+        setLastCapture(null);
+
+        // Immediate visual confirmation: start comparison with the newly linked photo
+        startComparison(refinedRef);
+    };
+
+    const handleSelectResult = (ref: Reference & { score: number, embedding?: number[] }) => {
+        // If it's personalized, go straight to comparison
+        if (userRefMap[ref.code]) {
+            startComparison(ref);
+        } else {
+            setPreviewRef(ref);
+        }
+    };
+
     const handleClose = () => {
         stopCamera();
         onClose();
@@ -290,13 +316,25 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
                                         </h2>
                                         <p className="text-sm text-green-400 font-mono">Similitud Búsqueda: {(previewRef.score * 100).toFixed(0)}%</p>
                                     </div>
-                                    <button
-                                        onClick={() => startComparison(previewRef)}
-                                        className="bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg font-bold border-2 border-orange-400/30 flex flex-col items-center"
-                                    >
-                                        <span className="text-lg">⚖️</span>
-                                        <span className="text-[10px]">COMPARAR</span>
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => startComparison(previewRef)}
+                                            className="flex-1 bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg font-bold border-2 border-orange-400/30 flex flex-col items-center justify-center h-16 shadow-[0_4px_10px_rgba(234,88,12,0.4)]"
+                                        >
+                                            <span className="text-lg">⚖️</span>
+                                            <span className="text-[10px]">COMPARAR</span>
+                                        </button>
+
+                                        {!userRefMap[previewRef.code] && lastCapture && (
+                                            <button
+                                                onClick={() => handleLinkCapture(previewRef.code)}
+                                                className="flex-1 bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold border-2 border-green-500/30 flex flex-col items-center justify-center h-16 shadow-[0_4px_10px_rgba(21,128,61,0.4)] animate-in zoom-in"
+                                            >
+                                                <span className="text-lg">📸</span>
+                                                <span className="text-[10px]">VINCULAR FOTO</span>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="flex gap-4">
@@ -407,7 +445,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
                             {results.map((ref, idx) => (
                                 <div
                                     key={ref.code}
-                                    onClick={() => setPreviewRef(ref)}
+                                    onClick={() => handleSelectResult(ref)}
                                     className="relative bg-gray-900 rounded-lg overflow-hidden active:scale-95 transition-transform border border-white/5 shadow-md cursor-pointer animate-cascade-in"
                                     style={{ animationDelay: `${idx * 40}ms` }}
                                 >
