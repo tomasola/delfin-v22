@@ -23,10 +23,13 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
     const [comparisonMode, setComparisonMode] = useState(false);
     const [liveScore, setLiveScore] = useState<number | null>(null);
     const [comparisonRefEmbedding, setComparisonRefEmbedding] = useState<number[] | null>(null);
+    const [comparisonRefCode, setComparisonRefCode] = useState<string | null>(null);
     const [debugLogs, setDebugLogs] = useState<string[]>([]);
     const [previewRef, setPreviewRef] = useState<(Reference & { score: number }) | null>(null);
     const [zoomLevel, setZoomLevel] = useState(1);
     const requestRef = useRef<number | null>(null);
+    const [lastCapture, setLastCapture] = useState<{ embedding: number[], image: string } | null>(null);
+    const [userRefMap, setUserRefMap] = useState<Record<string, { embedding: number[], image: string }>>({});
 
     const addLog = (msg: string) => {
         console.log("[DEBUG]", msg);
@@ -161,7 +164,14 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
                 ctx.filter = 'none';
                 ctx.drawImage(video, startX, startY, size, size, 0, 0, 224, 224);
                 addLog("v18: Analyzing...");
-                const matches = await findMatches(canvas, 10);
+                const { matches, inputVector } = await findMatches(canvas, 10);
+
+                // Store this capture for potential comparison
+                setLastCapture({
+                    embedding: inputVector,
+                    image: canvas.toDataURL('image/jpeg', 0.8)
+                });
+
                 const fullResults = matches.map(m => {
                     const ref = allReferences.find(r => r.code === m.code);
                     return ref ? { ...ref, score: m.score, embedding: m.embedding } : null;
@@ -178,7 +188,22 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
 
     const startComparison = async (ref: Reference & { score: number, embedding?: number[] }) => {
         addLog("v18: Init Compare " + ref.code);
-        setComparisonRefEmbedding(ref.embedding || null);
+
+        // If we have a fresh capture for this ref, use it and save it
+        let targetEmbedding = ref.embedding || null;
+        if (lastCapture) {
+            targetEmbedding = lastCapture.embedding;
+            setUserRefMap(prev => ({
+                ...prev,
+                [ref.code]: lastCapture
+            }));
+        } else if (userRefMap[ref.code]) {
+            // Use previously saved user capture for this code
+            targetEmbedding = userRefMap[ref.code].embedding;
+        }
+
+        setComparisonRefEmbedding(targetEmbedding);
+        setComparisonRefCode(ref.code);
         setComparisonMode(true);
         setPreviewRef(null);
         setResults([]);
@@ -221,22 +246,49 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
 
                         <div className="relative w-full max-w-lg flex-1 flex flex-col items-center justify-center overflow-hidden">
                             <div className="flex-1 w-full overflow-auto flex items-center justify-center bg-white/5 rounded-lg border border-white/10 relative">
-                                <RobustImage
-                                    code={previewRef.code}
-                                    className="max-w-full max-h-[60vh] object-contain"
-                                    style={{
-                                        transform: `scale(${zoomLevel})`,
-                                        transformOrigin: 'center center',
-                                        transition: 'transform 0.2s ease-out'
+                                <button
+                                    onClick={() => {
+                                        setComparisonMode(false);
+                                        setLiveScore(null);
+                                        setComparisonRefEmbedding(null);
+                                        setComparisonRefCode(null); // Clear comparisonRefCode when stopping comparison from detail view
                                     }}
-                                />
+                                    className="absolute top-2 left-2 z-10 p-2 bg-red-600 text-white rounded-full text-xs font-bold shadow-lg border-2 border-white/20 active:scale-95"
+                                >
+                                    DETENER COMPARACIÓN
+                                </button>
+                                {userRefMap[previewRef.code] ? (
+                                    <img
+                                        src={userRefMap[previewRef.code].image}
+                                        className="max-w-full max-h-[60vh] object-contain"
+                                        alt="User Ref"
+                                        style={{
+                                            transform: `scale(${zoomLevel})`,
+                                            transformOrigin: 'center center',
+                                            transition: 'transform 0.2s ease-out'
+                                        }}
+                                    />
+                                ) : (
+                                    <RobustImage
+                                        code={previewRef.code}
+                                        className="max-w-full max-h-[60vh] object-contain"
+                                        style={{
+                                            transform: `scale(${zoomLevel})`,
+                                            transformOrigin: 'center center',
+                                            transition: 'transform 0.2s ease-out'
+                                        }}
+                                    />
+                                )}
                             </div>
 
                             <div className="mt-4 text-center w-full bg-gray-900/80 p-4 rounded-xl backdrop-blur-sm border border-white/10">
                                 <div className="flex justify-between items-center mb-4 text-left">
-                                    <div>
-                                        <h2 className="text-3xl font-bold text-white tracking-wider">{previewRef.code}</h2>
-                                        <p className="text-sm text-green-400 font-mono">Búsqueda: {(previewRef.score * 100).toFixed(0)}%</p>
+                                    <div className="flex-1 overflow-hidden p-2">
+                                        <h2 className="text-3xl font-bold text-white tracking-wider flex items-center gap-2">
+                                            {previewRef.code}
+                                            {userRefMap[previewRef.code] && <span className="text-[10px] bg-orange-600 text-white px-2 py-0.5 rounded-full animate-pulse">PERSONALIZADA</span>}
+                                        </h2>
+                                        <p className="text-sm text-green-400 font-mono">Similitud Búsqueda: {(previewRef.score * 100).toFixed(0)}%</p>
                                     </div>
                                     <button
                                         onClick={() => startComparison(previewRef)}
@@ -276,9 +328,17 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
                             {/* Comparison Side Panel */}
                             {comparisonMode && comparisonRefEmbedding && (
                                 <div className="absolute top-2 left-2 w-20 bg-black/80 backdrop-blur-md rounded-xl p-1 border border-white/20 z-30 animate-in slide-in-from-left">
-                                    <RobustImage code={allReferences.find(r => r.embedding === comparisonRefEmbedding)?.code || ''} className="w-full h-16 object-contain bg-white rounded-lg mb-1" />
+                                    {userRefMap[comparisonRefCode || ''] ? (
+                                        <img
+                                            src={userRefMap[comparisonRefCode || ''].image}
+                                            className="w-full h-16 object-contain bg-white rounded-lg mb-1"
+                                            alt="User Ref"
+                                        />
+                                    ) : (
+                                        <RobustImage code={comparisonRefCode || ''} className="w-full h-16 object-contain bg-white rounded-lg mb-1" />
+                                    )}
                                     <div className="text-[10px] text-white font-bold text-center truncate px-1">
-                                        {allReferences.find(r => r.embedding === comparisonRefEmbedding)?.code}
+                                        {comparisonRefCode}
                                     </div>
                                     <div className={`text-xs font-bold text-center mt-1 font-mono ${liveScore && liveScore > 0.85 ? 'text-green-500' : 'text-orange-400'}`}>
                                         {liveScore ? (liveScore * 100).toFixed(1) : '0.0'}%
@@ -294,7 +354,12 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences }
                             {/* Shutter / Stop Button */}
                             <div className="absolute bottom-4 inset-x-0 flex justify-center">
                                 {comparisonMode ? (
-                                    <button onClick={() => { setComparisonMode(false); setLiveScore(null); setComparisonRefEmbedding(null); }} className="bg-red-600 text-white px-6 py-3 rounded-full font-bold shadow-xl border-2 border-white/20 active:scale-90">DETENER</button>
+                                    <button onClick={() => {
+                                        setComparisonMode(false);
+                                        setLiveScore(null);
+                                        setComparisonRefEmbedding(null);
+                                        setComparisonRefCode(null);
+                                    }} className="bg-red-600 text-white px-6 py-3 rounded-full font-bold shadow-xl border-2 border-white/20 active:scale-90">DETENER</button>
                                 ) : (
                                     <button onClick={captureAndSearch} disabled={!stream || !modelLoaded} className="bg-white p-1 rounded-full active:scale-90 transition-transform disabled:opacity-30">
                                         <div className="p-1 border-2 border-gray-200 rounded-full">

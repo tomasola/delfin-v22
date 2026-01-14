@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const EMBEDDINGS_FILE = path.join(ROOT_DIR, 'public', 'embeddings.json');
-const TEST_IMAGE_SRC = "C:/Users/tomas/.gemini/antigravity/brain/0bb06eed-3cd2-4ad1-b98c-d8059dbb15b4/uploaded_image_1768167566275.jpg";
+const TEST_IMAGE_SRC = "C:/Users/tomas/.gemini/antigravity/brain/8af3c523-9876-474c-97ab-d49c39bb80fa/uploaded_image_1768388298458.jpg";
 
 async function main() {
     await tf.setBackend('wasm');

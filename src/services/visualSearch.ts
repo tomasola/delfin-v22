@@ -57,7 +57,7 @@ export const findMatches = async (
     });
 
     matches.sort((a, b) => b.score - a.score);
-    return matches.slice(0, limit);
+    return { matches: matches.slice(0, limit), inputVector };
 };
 
 export function cosineSimilarity(a: number[], b: number[]): number {
