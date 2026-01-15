@@ -26,6 +26,20 @@
         "business",
         "productivity"
     ],
+    "screenshots": [
+        {
+            "src": "/logo.webp",
+            "sizes": "540x720",
+            "type": "image/webp",
+            "form_factor": "narrow"
+        },
+        {
+            "src": "/logo.webp",
+            "sizes": "720x540",
+            "type": "image/webp",
+            "form_factor": "wide"
+        }
+    ],
     "lang": "es",
     "dir": "ltr"
 }
