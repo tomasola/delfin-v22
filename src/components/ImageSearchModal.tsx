@@ -170,7 +170,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
             if (ctx) {
                 ctx.filter = 'none';
                 ctx.drawImage(video, startX, startY, size, size, 0, 0, 224, 224);
-                addLog("v22.2: Analyzing...");
+                addLog("v23: Analyzing...");
                 // Pass userRefMap so IA uses previous learning
                 const { matches, inputVector } = await findMatches(canvas, 10, userRefMap);
 
@@ -195,7 +195,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
     };
 
     const startComparison = async (ref: Reference & { score: number, embedding?: number[] }) => {
-        addLog("v22.2: Init Compare " + ref.code);
+        addLog("v23: Init Compare " + ref.code);
 
         // If we have a fresh capture for this ref, use it and save it
         let targetEmbedding = ref.embedding || null;
@@ -257,7 +257,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
             setManualError(null);
             setManualCode('');
             setLastCapture(null);
-            addLog(`v22.2: Manual save ${foundRef.code}`);
+            addLog(`v23: Manual save ${foundRef.code}`);
 
             handleClose();
             onSelectRef(foundRef);
@@ -265,7 +265,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
         }
 
         // If multiple matches, show them as search results
-        addLog(`v22.2: Found ${foundRefs.length} matches for "${manualCode.trim()}"`);
+        addLog(`v23: Found ${foundRefs.length} matches for "${manualCode.trim()}"`);
         const resultsWithScore = foundRefs.map(ref => ({
             ...ref,
             score: 1.0, // Perfect match since it's manual
@@ -292,7 +292,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
             {/* Header + Logs */}
             <div className="bg-gray-950/80 backdrop-blur-lg p-3 flex justify-between items-center text-white border-b border-white/10">
                 <div className="flex flex-col">
-                    <span className="font-bold text-sm">Búsqueda IA v22.2 {comparisonMode ? '(COMPARACIÓN ACTIVA)' : '(INDUSTRIAL++)'}</span>
+                    <span className="font-bold text-sm">Búsqueda IA v23 {comparisonMode ? '(COMPARACIÓN ACTIVA)' : '(INDUSTRIAL++)'}</span>
                     <div className="flex gap-2 text-[9px] text-green-500 font-mono mt-1">
                         {debugLogs.map((l, i) => <span key={i} className="opacity-70">{l} |</span>)}
                     </div>
