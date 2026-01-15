@@ -8,7 +8,7 @@ interface ImageSearchModalProps {
     onClose: () => void;
     onSelectRef: (ref: Reference) => void;
     allReferences: Reference[];
-    userRefMap: Record<string, { embedding: number[], image: string }>;
+    userRefMap: Record<string, { embedding: number[], image: string }[]>;
     onLinkReference: (code: string, capture: { embedding: number[], image: string }) => void;
 }
 
@@ -40,15 +40,15 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
     // Model loading
     useEffect(() => {
         if (isOpen) {
-            addLog("v18: Modal Open");
+            addLog("v22: Modal Open");
             loadResources()
                 .then(() => {
                     setModelLoaded(true);
-                    addLog("v18: AI Ready");
+                    addLog("v22: AI Ready");
                 })
                 .catch(err => {
                     setError('Error IA: ' + err.message);
-                    addLog("v18: AI Error: " + err.message);
+                    addLog("v22: AI Error: " + err.message);
                 });
             startCamera();
         } else {
@@ -122,17 +122,17 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
     const startCamera = async () => {
         try {
             setError(null);
-            addLog("v18: Start Camera...");
+            addLog("v22: Start Camera...");
             const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'environment' },
                 audio: false
             }).catch(() => navigator.mediaDevices.getUserMedia({ video: true, audio: false }));
 
             setStream(mediaStream);
-            addLog("v18: Stream set");
+            addLog("v22: Stream set");
         } catch (err: any) {
             setError('Error Cámara: ' + err.message);
-            addLog("v18: Cam Error: " + err.message);
+            addLog("v22: Cam Error: " + err.message);
         }
     };
 
@@ -140,7 +140,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
         if (stream) {
             stream.getTracks().forEach(t => t.stop());
             setStream(null);
-            addLog("v18: Cam Stopped");
+            addLog("v22: Cam Stopped");
         }
     };
 
@@ -163,7 +163,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
             if (ctx) {
                 ctx.filter = 'none';
                 ctx.drawImage(video, startX, startY, size, size, 0, 0, 224, 224);
-                addLog("v18: Analyzing...");
+                addLog("v22: Analyzing...");
                 // Pass userRefMap so IA uses previous learning
                 const { matches, inputVector } = await findMatches(canvas, 10, userRefMap);
 
@@ -188,13 +188,14 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
     };
 
     const startComparison = async (ref: Reference & { score: number, embedding?: number[] }) => {
-        addLog("v18: Init Compare " + ref.code);
+        addLog("v22: Init Compare " + ref.code);
 
         // If we have a fresh capture for this ref, use it and save it
         let targetEmbedding = ref.embedding || null;
-        if (userRefMap[ref.code]) {
-            // Use previously saved user capture for this code
-            targetEmbedding = userRefMap[ref.code].embedding;
+        if (userRefMap[ref.code] && userRefMap[ref.code].length > 0) {
+            // Use the most recent saved user capture (last in array)
+            const captures = userRefMap[ref.code];
+            targetEmbedding = captures[captures.length - 1].embedding;
         }
 
         setComparisonRefEmbedding(targetEmbedding);
@@ -219,12 +220,8 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
     };
 
     const handleSelectResult = (ref: Reference & { score: number, embedding?: number[] }) => {
-        // If it's personalized, go straight to comparison
-        if (userRefMap[ref.code]) {
-            startComparison(ref);
-        } else {
-            setPreviewRef(ref);
-        }
+        // Now we ALWAYS show the enhanced preview first
+        setPreviewRef(ref);
     };
 
     const handleClose = () => {
@@ -239,7 +236,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
             {/* Header + Logs */}
             <div className="bg-gray-950/80 backdrop-blur-lg p-3 flex justify-between items-center text-white border-b border-white/10">
                 <div className="flex flex-col">
-                    <span className="font-bold text-sm">Búsqueda IA v21 {comparisonMode ? '(COMPARACIÓN ACTIVA)' : '(INDUSTRIAL++)'}</span>
+                    <span className="font-bold text-sm">Búsqueda IA v22 {comparisonMode ? '(COMPARACIÓN ACTIVA)' : '(INDUSTRIAL++)'}</span>
                     <div className="flex gap-2 text-[9px] text-green-500 font-mono mt-1">
                         {debugLogs.map((l, i) => <span key={i} className="opacity-70">{l} |</span>)}
                     </div>
@@ -260,28 +257,46 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
                                 <div className="flex gap-2 w-full">
                                     {/* Catalog image */}
                                     <div className="flex-1 flex flex-col gap-1">
-                                        <span className="text-[10px] text-gray-400 font-bold uppercase text-center tracking-tighter">🖼️ Catálogo</span>
-                                        <div className="bg-white rounded-xl p-1 aspect-square flex items-center justify-center overflow-hidden border border-white/10">
-                                            <RobustImage
-                                                code={previewRef.code}
-                                                className="w-full h-full object-contain"
-                                            />
+                                        <span className="text-[10px] text-gray-400 font-bold uppercase text-center tracking-tighter">🖼️ Triada de Control (Oficial + IA)</span>
+                                        <div className="flex flex-row gap-2 h-40">
+                                            {/* Catalog Image */}
+                                            <div className="flex-1 bg-white rounded-xl overflow-hidden shadow-inner flex items-center justify-center p-2 border border-white/10 group">
+                                                <RobustImage
+                                                    code={previewRef.code}
+                                                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700"
+                                                />
+                                                <div className="absolute top-1 left-1 bg-black/60 text-white text-[8px] px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter">Oficial</div>
+                                            </div>
+
+                                            {/* User Captures */}
+                                            {userRefMap[previewRef.code]?.map((cap, i) => (
+                                                <div key={i} className="flex-1 bg-gray-800 rounded-xl overflow-hidden shadow-inner flex items-center justify-center relative border border-white/10 group">
+                                                    <img
+                                                        src={cap.image}
+                                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                        alt={`User Capture ${i + 1}`}
+                                                    />
+                                                    <div className="absolute top-1 left-1 bg-orange-600 text-white text-[8px] px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter">
+                                                        IA {i + 1}
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            {/* Placeholder for missing second capture if analyzing */}
+                                            {(!userRefMap[previewRef.code] || userRefMap[previewRef.code].length < 2) && lastCapture && (
+                                                <div className="flex-1 bg-blue-900/40 rounded-xl overflow-hidden shadow-inner border-2 border-dashed border-blue-400/30 flex items-center justify-center relative group">
+                                                    <img
+                                                        src={lastCapture.image}
+                                                        className="w-full h-full object-cover grayscale blur-[0.5px] group-hover:scale-110 transition-transform duration-700 opacity-70"
+                                                        alt="New Capture Preview"
+                                                    />
+                                                    <div className="absolute top-1 left-1 bg-blue-600 text-white text-[8px] px-1.5 py-0.5 rounded uppercase font-bold tracking-tighter shadow-lg">
+                                                        NUEVA
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-
-                                    {/* Current Capture */}
-                                    {lastCapture && (
-                                        <div className="flex-1 flex flex-col gap-1">
-                                            <span className="text-[10px] text-blue-400 font-bold uppercase text-center tracking-tighter">📸 Tu Captura</span>
-                                            <div className="bg-gray-800 rounded-xl p-1 aspect-square flex items-center justify-center overflow-hidden border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                                                <img
-                                                    src={lastCapture.image}
-                                                    className="w-full h-full object-contain"
-                                                    alt="User Ref"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
 
                                 <div className="bg-gray-900/80 p-5 rounded-2xl backdrop-blur-sm border border-white/10 shadow-2xl mt-auto">
@@ -289,23 +304,38 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
                                         <div className="flex-1 overflow-hidden pr-2">
                                             <h2 className="text-3xl font-bold text-white tracking-widest flex items-center gap-2">
                                                 {previewRef.code}
-                                                {userRefMap[previewRef.code] && <span className="text-[10px] bg-orange-600 text-white px-2 py-0.5 rounded-full animate-pulse">PERSONALIZADA</span>}
+                                                {userRefMap[previewRef.code] && (
+                                                    <span className="text-[10px] bg-orange-600 text-white px-2 py-0.5 rounded-full animate-pulse">
+                                                        {userRefMap[previewRef.code].length} FOTOS IA
+                                                    </span>
+                                                )}
                                             </h2>
                                             <p className="text-xs text-green-400 font-mono mt-1 uppercase tracking-widest">Coincidencia: {(previewRef.score * 100).toFixed(0)}%</p>
                                         </div>
 
-                                        {!userRefMap[previewRef.code] && lastCapture && (
+                                        {lastCapture && (
                                             <button
                                                 onClick={() => handleLinkCapture(previewRef.code)}
-                                                className="bg-green-600 hover:bg-green-500 text-white px-4 h-16 rounded-xl font-bold border-2 border-green-400/30 shadow-[0_4px_15px_rgba(22,163,74,0.4)] flex flex-col items-center justify-center active:scale-95 transition-all"
+                                                className="bg-green-600 hover:bg-green-500 text-white px-4 h-16 rounded-xl font-bold border-2 border-green-400/30 shadow-[0_4px_15_rgba(22,163,74,0.4)] flex flex-col items-center justify-center active:scale-95 transition-all"
                                             >
                                                 <span className="text-xl">✅</span>
-                                                <span className="text-[10px] whitespace-nowrap px-2">CONFIRMAR</span>
+                                                <span className="text-[10px] whitespace-nowrap px-2">
+                                                    {userRefMap[previewRef.code]?.length >= 2 ? 'REEMPLAZAR' : 'CONFIRMAR'}
+                                                </span>
                                             </button>
                                         )}
                                     </div>
 
-                                    <div className="flex gap-4">
+                                    <div className="flex gap-2 mb-4">
+                                        <button
+                                            onClick={() => startComparison(previewRef)}
+                                            className="flex-1 py-3 rounded-xl bg-orange-600/20 text-orange-400 font-bold text-[10px] border border-orange-500/30 active:bg-orange-600/40 transition-colors uppercase tracking-widest flex items-center justify-center gap-2"
+                                        >
+                                            <span>🔍</span> Comparar en Vivo
+                                        </button>
+                                    </div>
+
+                                    <div className="flex gap-3">
                                         <button onClick={() => { setPreviewRef(null); }} className="flex-1 py-4 rounded-xl bg-gray-800 text-white font-bold text-sm border border-white/10 active:bg-gray-700 transition-colors uppercase tracking-widest flex items-center justify-center gap-2">
                                             <span>⬅️</span> Volver
                                         </button>

@@ -21,7 +21,7 @@ function App() {
   const [pendingPrint, setPendingPrint] = useState(false)
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [recentRefs, setRecentRefs] = useState<Reference[]>([])
-  const [userRefMap, setUserRefMap] = useState<Record<string, { embedding: number[], image: string }>>({})
+  const [userRefMap, setUserRefMap] = useState<Record<string, { embedding: number[], image: string }[]>>({})
 
   // Pagination
   const [page, setPage] = useState(1)
@@ -166,7 +166,24 @@ function App() {
     const savedUserRefs = localStorage.getItem('user_ref_map')
     if (savedUserRefs) {
       try {
-        setUserRefMap(JSON.parse(savedUserRefs))
+        const parsed = JSON.parse(savedUserRefs)
+        // Migration: If existing data is in old format (object instead of array of objects)
+        const keys = Object.keys(parsed)
+        if (keys.length > 0) {
+          const firstVal = parsed[keys[0]]
+          if (firstVal && !Array.isArray(firstVal)) {
+            console.log('Migrating userRefMap to dual-capture format...')
+            const migrated: Record<string, any[]> = {}
+            keys.forEach(k => {
+              migrated[k] = [parsed[k]]
+            })
+            setUserRefMap(migrated)
+          } else {
+            setUserRefMap(parsed)
+          }
+        } else {
+          setUserRefMap({})
+        }
       } catch (e) {
         console.error('Error loading user refs:', e)
       }
@@ -190,12 +207,22 @@ function App() {
     })
   }
 
+  // Handle linking a capture to a reference
   const handleLinkReference = (code: string, capture: { embedding: number[], image: string }) => {
-    setUserRefMap(prev => ({
-      ...prev,
-      [code]: capture
-    }))
-    addToast('Referencia personalizada vinculada', 'success')
+    setUserRefMap(prev => {
+      const currentCaptures = prev[code] || [];
+      // Keep only the last 1 capture to add the new one (total 2)
+      // If we want 2 total, and we already have 2, we remove the oldest [0]
+      const newCaptures = currentCaptures.length >= 2
+        ? [...currentCaptures.slice(1), capture]
+        : [...currentCaptures, capture];
+
+      return {
+        ...prev,
+        [code]: newCaptures
+      };
+    });
+    addToast(`IA: Referencia ${code} optimizada con nueva captura`, 'success');
   }
 
   // Auto-cleanup for old Service Workers (v2 -> v7 transition)
