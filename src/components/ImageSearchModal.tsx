@@ -440,34 +440,6 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
                             )}
                         </div>
 
-                        {/* Manual Code Entry */}
-                        {!comparisonMode && lastCapture && (
-                            <div className="w-full bg-gray-900/80 border border-white/10 p-3 rounded-2xl backdrop-blur-sm animate-in fade-in slide-in-from-bottom">
-                                <p className="text-white text-[10px] uppercase font-bold tracking-widest mb-2 text-center">💾 Guardar con Código Manual</p>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={manualCode}
-                                        onChange={(e) => {
-                                            setManualCode(e.target.value.toUpperCase());
-                                            setManualError(null);
-                                        }}
-                                        placeholder="Ej: 7310-001"
-                                        className="flex-1 px-3 py-2 bg-gray-800 text-white rounded-lg border border-white/20 focus:border-blue-500 focus:outline-none text-sm font-mono uppercase"
-                                    />
-                                    <button
-                                        onClick={handleManualSave}
-                                        disabled={!manualCode.trim()}
-                                        className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
-                                    >
-                                        ✅ Guardar
-                                    </button>
-                                </div>
-                                {manualError && (
-                                    <p className="text-red-400 text-[10px] mt-2 text-center font-bold animate-in fade-in">{manualError}</p>
-                                )}
-                            </div>
-                        )}
 
                         {comparisonMode && (
                             <div className="bg-gray-900 border border-white/10 p-3 rounded-2xl w-full text-center">
@@ -483,7 +455,36 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
                     </div>
                 )}
 
-                {/* 3. ANALYZING STATUS */}
+                {/* 3. MANUAL CODE ENTRY */}
+                {!comparisonMode && lastCapture && (
+                    <div className="w-full max-w-md bg-gray-900/80 border border-white/10 p-3 rounded-2xl backdrop-blur-sm animate-in fade-in slide-in-from-bottom">
+                        <p className="text-white text-[10px] uppercase font-bold tracking-widest mb-2 text-center">💾 Guardar con Código Manual</p>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={manualCode}
+                                onChange={(e) => {
+                                    setManualCode(e.target.value.toUpperCase());
+                                    setManualError(null);
+                                }}
+                                placeholder="Ej: 7310-001"
+                                className="flex-1 px-3 py-2 bg-gray-800 text-white rounded-lg border border-white/20 focus:border-blue-500 focus:outline-none text-sm font-mono uppercase"
+                            />
+                            <button
+                                onClick={handleManualSave}
+                                disabled={!manualCode.trim()}
+                                className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
+                            >
+                                ✅ Guardar
+                            </button>
+                        </div>
+                        {manualError && (
+                            <p className="text-red-400 text-[10px] mt-2 text-center font-bold animate-in fade-in">{manualError}</p>
+                        )}
+                    </div>
+                )}
+
+                {/* 4. ANALYZING STATUS */}
                 {analyzing && (
                     <div className="text-white flex flex-col items-center animate-pulse py-8">
                         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
