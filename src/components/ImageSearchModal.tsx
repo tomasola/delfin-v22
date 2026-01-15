@@ -30,6 +30,8 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
     const [previewRef, setPreviewRef] = useState<(Reference & { score: number }) | null>(null);
     const requestRef = useRef<number | null>(null);
     const [lastCapture, setLastCapture] = useState<{ embedding: number[], image: string } | null>(null);
+    const [manualCode, setManualCode] = useState('');
+    const [manualError, setManualError] = useState<string | null>(null);
 
     const addLog = (msg: string) => {
         console.log("[DEBUG]", msg);
@@ -224,8 +226,36 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
         setPreviewRef(ref);
     };
 
+    const handleManualSave = async () => {
+        if (!lastCapture || !manualCode.trim()) {
+            setManualError('Introduce un código válido');
+            return;
+        }
+
+        const trimmedCode = manualCode.trim().toUpperCase();
+        const foundRef = allReferences.find(r => r.code.toUpperCase() === trimmedCode);
+
+        if (!foundRef) {
+            setManualError(`Código "${trimmedCode}" no encontrado`);
+            return;
+        }
+
+        // Save the capture
+        onLinkReference(foundRef.code, lastCapture);
+        setManualError(null);
+        setManualCode('');
+        setLastCapture(null);
+        addLog(`v22: Manual save ${foundRef.code}`);
+
+        // Show success and close
+        handleClose();
+        onSelectRef(foundRef);
+    };
+
     const handleClose = () => {
         stopCamera();
+        setManualCode('');
+        setManualError(null);
         onClose();
     };
 
@@ -236,7 +266,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
             {/* Header + Logs */}
             <div className="bg-gray-950/80 backdrop-blur-lg p-3 flex justify-between items-center text-white border-b border-white/10">
                 <div className="flex flex-col">
-                    <span className="font-bold text-sm">Búsqueda IA v22 {comparisonMode ? '(COMPARACIÓN ACTIVA)' : '(INDUSTRIAL++)'}</span>
+                    <span className="font-bold text-sm">Búsqueda IA v22.1 {comparisonMode ? '(COMPARACIÓN ACTIVA)' : '(INDUSTRIAL++)'}</span>
                     <div className="flex gap-2 text-[9px] text-green-500 font-mono mt-1">
                         {debugLogs.map((l, i) => <span key={i} className="opacity-70">{l} |</span>)}
                     </div>
@@ -409,6 +439,35 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
                                 <div className="absolute top-2 left-2 text-[8px] text-white bg-black/40 px-2 py-0.5 rounded-full animate-pulse">CARGANDO...</div>
                             )}
                         </div>
+
+                        {/* Manual Code Entry */}
+                        {!comparisonMode && lastCapture && (
+                            <div className="w-full bg-gray-900/80 border border-white/10 p-3 rounded-2xl backdrop-blur-sm animate-in fade-in slide-in-from-bottom">
+                                <p className="text-white text-[10px] uppercase font-bold tracking-widest mb-2 text-center">💾 Guardar con Código Manual</p>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={manualCode}
+                                        onChange={(e) => {
+                                            setManualCode(e.target.value.toUpperCase());
+                                            setManualError(null);
+                                        }}
+                                        placeholder="Ej: 7310-001"
+                                        className="flex-1 px-3 py-2 bg-gray-800 text-white rounded-lg border border-white/20 focus:border-blue-500 focus:outline-none text-sm font-mono uppercase"
+                                    />
+                                    <button
+                                        onClick={handleManualSave}
+                                        disabled={!manualCode.trim()}
+                                        className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-all"
+                                    >
+                                        ✅ Guardar
+                                    </button>
+                                </div>
+                                {manualError && (
+                                    <p className="text-red-400 text-[10px] mt-2 text-center font-bold animate-in fade-in">{manualError}</p>
+                                )}
+                            </div>
+                        )}
 
                         {comparisonMode && (
                             <div className="bg-gray-900 border border-white/10 p-3 rounded-2xl w-full text-center">

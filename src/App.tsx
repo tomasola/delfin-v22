@@ -10,6 +10,7 @@ import { ReferenceCard } from './components/ReferenceCard'
 import { ReferenceDetail } from './components/ReferenceDetail'
 import { ToastContainer } from './components/Toast'
 import { ImageSearchModal } from './components/ImageSearchModal'
+import { ImageEnlargedModal } from './components/ImageEnlargedModal'
 import { getUniqueCategories, filterByCategory, filterReferences } from './utils/search'
 import { exportDataAsCSV, exportDataAsJSON } from './utils/export'
 
@@ -22,6 +23,7 @@ function App() {
   const [showImageSearch, setShowImageSearch] = useState(false)
   const [recentRefs, setRecentRefs] = useState<Reference[]>([])
   const [userRefMap, setUserRefMap] = useState<Record<string, { embedding: number[], image: string }[]>>({})
+  const [enlargedRef, setEnlargedRef] = useState<Reference | null>(null)
 
   // Pagination
   const [page, setPage] = useState(1)
@@ -86,8 +88,14 @@ function App() {
   }
 
   const handleSelectRef = (ref: Reference) => {
-    setSelectedRef(ref)
     addToHistory(ref)
+
+    // If reference has 2 AI photos, show enlarged view instead of detail
+    if (userRefMap[ref.code]?.length === 2) {
+      setEnlargedRef(ref)
+    } else {
+      setSelectedRef(ref)
+    }
   }
 
   const handleBack = () => {
@@ -258,6 +266,24 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedRef, filteredResults])
 
+  // Show enlarged view for references with 2 AI photos
+  if (enlargedRef && userRefMap[enlargedRef.code]?.length === 2) {
+    return (
+      <>
+        <ImageEnlargedModal
+          reference={enlargedRef}
+          userCaptures={userRefMap[enlargedRef.code]}
+          onClose={() => setEnlargedRef(null)}
+          onViewDetail={() => {
+            setSelectedRef(enlargedRef)
+            setEnlargedRef(null)
+          }}
+        />
+        <ToastContainer messages={toasts} onClose={removeToast} />
+      </>
+    )
+  }
+
   // Show detail view if reference is selected
   if (selectedRef) {
     return (
@@ -308,7 +334,7 @@ function App() {
         <div className="text-center mb-8 mt-4">
           <img src="/logo.webp" alt="Delfín" className="w-20 h-20 mx-auto mb-4" />
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
-            Delfín Etiquetas v22
+            Delfín Etiquetas v22.1
           </h1>
         </div>
 
