@@ -5,6 +5,7 @@ export interface Reference {
     image: string
     category: string
     embedding?: number[]
+    isFlipped?: boolean
 }
 
 export interface ReferenceData {
