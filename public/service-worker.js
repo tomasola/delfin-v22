@@ -1,4 +1,4 @@
-const CACHE_NAME = 'delfin-v18';
+const CACHE_NAME = 'delfin-v23';
 self.skipWaiting();
 const urlsToCache = [
     '/',
