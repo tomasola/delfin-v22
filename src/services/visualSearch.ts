@@ -42,6 +42,22 @@ export const getEmbedding = async (
     return (embeddingArray as number[][])[0];
 };
 
+// Flip image horizontally to detect mirrored sides of bars
+export const flipImageHorizontally = (sourceCanvas: HTMLCanvasElement): HTMLCanvasElement => {
+    const flipped = document.createElement('canvas');
+    flipped.width = sourceCanvas.width;
+    flipped.height = sourceCanvas.height;
+    const ctx = flipped.getContext('2d');
+
+    if (!ctx) throw new Error('Could not get canvas context');
+
+    ctx.translate(flipped.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(sourceCanvas, 0, 0);
+
+    return flipped;
+};
+
 export const findMatches = async (
     imgElement: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement,
     limit: number = 5,
@@ -50,23 +66,51 @@ export const findMatches = async (
     const { embeddings } = await loadResources();
     if (!embeddings) throw new Error('Embeddings not loaded');
 
+    // Generate embeddings for both original and flipped (mirrored) images
     const inputVector = await getEmbedding(imgElement);
+
+    let flippedVector: number[] | null = null;
+    if (imgElement instanceof HTMLCanvasElement) {
+        const flippedCanvas = flipImageHorizontally(imgElement);
+        flippedVector = await getEmbedding(flippedCanvas);
+    }
 
     const matches = embeddings.map(record => {
         let bestScore = cosineSimilarity(inputVector, record.embedding);
+        let isFlipped = false;
+
+        // Check flipped version against catalog
+        if (flippedVector) {
+            const flippedScore = cosineSimilarity(flippedVector, record.embedding);
+            if (flippedScore > bestScore) {
+                bestScore = flippedScore;
+                isFlipped = true;
+            }
+        }
 
         // If user has personalized captures for THIS particular reference, check them all
         const userCaptures = userRefMap?.[record.code];
         if (userCaptures && Array.isArray(userCaptures)) {
             userCaptures.forEach(capture => {
+                // Check original against user captures
                 const userScore = cosineSimilarity(inputVector, capture.embedding);
                 if (userScore > bestScore) {
                     bestScore = userScore;
+                    isFlipped = false;
+                }
+
+                // Check flipped against user captures
+                if (flippedVector) {
+                    const userFlippedScore = cosineSimilarity(flippedVector, capture.embedding);
+                    if (userFlippedScore > bestScore) {
+                        bestScore = userFlippedScore;
+                        isFlipped = true;
+                    }
                 }
             });
         }
 
-        return { ...record, score: bestScore };
+        return { ...record, score: bestScore, isFlipped };
     });
 
     matches.sort((a, b) => b.score - a.score);

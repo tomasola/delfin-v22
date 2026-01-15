@@ -165,7 +165,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
             if (ctx) {
                 ctx.filter = 'none';
                 ctx.drawImage(video, startX, startY, size, size, 0, 0, 224, 224);
-                addLog("v22: Analyzing...");
+                addLog("v22.2: Analyzing...");
                 // Pass userRefMap so IA uses previous learning
                 const { matches, inputVector } = await findMatches(canvas, 10, userRefMap);
 
@@ -177,8 +177,8 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
 
                 const fullResults = matches.map(m => {
                     const ref = allReferences.find(r => r.code === m.code);
-                    return ref ? { ...ref, score: m.score, embedding: m.embedding } : null;
-                }).filter(Boolean) as (Reference & { score: number, embedding?: number[] })[];
+                    return ref ? { ...ref, score: m.score, embedding: m.embedding, isFlipped: m.isFlipped } : null;
+                }).filter(Boolean) as (Reference & { score: number, embedding?: number[], isFlipped?: boolean })[];
                 setResults(fullResults);
                 // We keep camera for a moment to allow preview confirm
             }
@@ -190,7 +190,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
     };
 
     const startComparison = async (ref: Reference & { score: number, embedding?: number[] }) => {
-        addLog("v22: Init Compare " + ref.code);
+        addLog("v22.2: Init Compare " + ref.code);
 
         // If we have a fresh capture for this ref, use it and save it
         let targetEmbedding = ref.embedding || null;
@@ -221,7 +221,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
         onSelectRef(refinedRef);
     };
 
-    const handleSelectResult = (ref: Reference & { score: number, embedding?: number[] }) => {
+    const handleSelectResult = (ref: Reference & { score: number, embedding?: number[], isFlipped?: boolean }) => {
         // Now we ALWAYS show the enhanced preview first
         setPreviewRef(ref);
     };
@@ -245,7 +245,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
         setManualError(null);
         setManualCode('');
         setLastCapture(null);
-        addLog(`v22: Manual save ${foundRef.code}`);
+        addLog(`v22.2: Manual save ${foundRef.code}`);
 
         // Show success and close
         handleClose();
@@ -266,7 +266,7 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
             {/* Header + Logs */}
             <div className="bg-gray-950/80 backdrop-blur-lg p-3 flex justify-between items-center text-white border-b border-white/10">
                 <div className="flex flex-col">
-                    <span className="font-bold text-sm">Búsqueda IA v22.1 {comparisonMode ? '(COMPARACIÓN ACTIVA)' : '(INDUSTRIAL++)'}</span>
+                    <span className="font-bold text-sm">Búsqueda IA v22.2 {comparisonMode ? '(COMPARACIÓN ACTIVA)' : '(INDUSTRIAL++)'}</span>
                     <div className="flex gap-2 text-[9px] text-green-500 font-mono mt-1">
                         {debugLogs.map((l, i) => <span key={i} className="opacity-70">{l} |</span>)}
                     </div>
@@ -513,7 +513,10 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
                                     />
                                     <div className="p-1 pb-2">
                                         <div className="font-bold text-white text-[10px] truncate">{ref.code}</div>
-                                        <div className="text-[8px] text-green-500 font-bold">{(ref.score * 100).toFixed(0)}%</div>
+                                        <div className="text-[8px] text-green-500 font-bold flex items-center justify-center gap-1">
+                                            {(ref.score * 100).toFixed(0)}%
+                                            {ref.isFlipped && <span title="Detectado por espejo">🔄</span>}
+                                        </div>
                                         {userRefMap[ref.code] && (
                                             <div className="absolute top-1 left-1 w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_5px_rgba(249,115,22,0.8)]"></div>
                                         )}
