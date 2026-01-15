@@ -33,6 +33,11 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
     const [manualCode, setManualCode] = useState('');
     const [manualError, setManualError] = useState<string | null>(null);
 
+    // Normalize code: remove dots and letters, keep only numbers and hyphens
+    const normalizeCode = (code: string): string => {
+        return code.replace(/[.a-zA-Z]/g, '').trim();
+    };
+
     const addLog = (msg: string) => {
         console.log("[DEBUG]", msg);
         setDebugLogs(prev => [...prev.slice(-4), msg]);
@@ -232,24 +237,45 @@ export function ImageSearchModal({ isOpen, onClose, onSelectRef, allReferences, 
             return;
         }
 
-        const trimmedCode = manualCode.trim().toUpperCase();
-        const foundRef = allReferences.find(r => r.code.toUpperCase() === trimmedCode);
+        const normalizedInput = normalizeCode(manualCode.trim().toUpperCase());
 
-        if (!foundRef) {
-            setManualError(`Código "${trimmedCode}" no encontrado`);
+        // Find all references that match (ignoring dots and letters)
+        const foundRefs = allReferences.filter(r => {
+            const normalizedRef = normalizeCode(r.code.toUpperCase());
+            return normalizedRef === normalizedInput;
+        });
+
+        if (foundRefs.length === 0) {
+            setManualError(`No se encontraron referencias para "${manualCode.trim()}"`);
             return;
         }
 
-        // Save the capture
-        onLinkReference(foundRef.code, lastCapture);
+        // If only one match, save and open directly
+        if (foundRefs.length === 1) {
+            const foundRef = foundRefs[0];
+            onLinkReference(foundRef.code, lastCapture);
+            setManualError(null);
+            setManualCode('');
+            setLastCapture(null);
+            addLog(`v22.2: Manual save ${foundRef.code}`);
+
+            handleClose();
+            onSelectRef(foundRef);
+            return;
+        }
+
+        // If multiple matches, show them as search results
+        addLog(`v22.2: Found ${foundRefs.length} matches for "${manualCode.trim()}"`);
+        const resultsWithScore = foundRefs.map(ref => ({
+            ...ref,
+            score: 1.0, // Perfect match since it's manual
+            embedding: lastCapture.embedding
+        }));
+
+        setResults(resultsWithScore);
         setManualError(null);
         setManualCode('');
-        setLastCapture(null);
-        addLog(`v22.2: Manual save ${foundRef.code}`);
-
-        // Show success and close
-        handleClose();
-        onSelectRef(foundRef);
+        // Keep lastCapture so user can still save to any of the matches
     };
 
     const handleClose = () => {
