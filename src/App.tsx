@@ -90,8 +90,8 @@ function App() {
   const handleSelectRef = (ref: Reference) => {
     addToHistory(ref)
 
-    // If reference has 2 AI photos, show enlarged view instead of detail
-    if (userRefMap[ref.code]?.length === 2) {
+    // If reference has AI photos, show enlarged view instead of detail
+    if (userRefMap[ref.code]?.length >= 1) {
       setEnlargedRef(ref)
     } else {
       setSelectedRef(ref)
@@ -266,8 +266,8 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [selectedRef, filteredResults])
 
-  // Show enlarged view for references with 2 AI photos
-  if (enlargedRef && userRefMap[enlargedRef.code]?.length === 2) {
+  // Show enlarged view for references with AI photos
+  if (enlargedRef && userRefMap[enlargedRef.code]?.length >= 1) {
     return (
       <>
         <ImageEnlargedModal
