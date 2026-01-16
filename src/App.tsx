@@ -178,14 +178,22 @@ function App() {
         // Real-time subscription
         const sub = subscribeToCaptures((payload) => {
           const newRow = payload.new;
+
+          // Only show notification if it's NOT from this device (optional, but requested implicitly by "recibe")
+          // Since we don't have device IDs yet, we show it anyway but with "Compartida" tag
           setUserRefMap(prev => {
             const current = prev[newRow.ref_code] || [];
+
+            // Avoid duplicate additions if the local state already has this image (from handleLinkReference)
+            if (current.some(c => c.image === newRow.image_url)) return prev;
+
             const updated = current.length >= 2
               ? [...current.slice(1), { embedding: newRow.embedding, image: newRow.image_url }]
               : [...current, { embedding: newRow.embedding, image: newRow.image_url }];
+
+            addToast(`☁️ IA: Foto compartida recibida para ${newRow.ref_code}`, 'info');
             return { ...prev, [newRow.ref_code]: updated };
           });
-          addToast(`IA: Nueva foto recibida para ${newRow.ref_code}`, 'info');
         });
 
         return () => { sub.unsubscribe(); };
@@ -225,7 +233,7 @@ function App() {
 
   // Handle linking a capture to a reference (NOW WITH CLOUD SYNC)
   const handleLinkReference = async (code: string, capture: { embedding: number[], image: string }) => {
-    addToast('Subiendo a la nube...', 'info');
+    addToast('🚀 Subiendo imagen para compartir...', 'info');
 
     try {
       const { uploadCapture, saveCaptureMetadata } = await import('./services/supabase');
@@ -238,21 +246,20 @@ function App() {
 
       // Note: userRefMap will be updated by the subscription (or we can update it locally too)
       setUserRefMap(prev => {
-        const currentCaptures = prev[code] || [];
-        const newCaptures = currentCaptures.length >= 2
-          ? [...currentCaptures.slice(1), { embedding: capture.embedding, image: publicUrl }]
-          : [...currentCaptures, { embedding: capture.embedding, image: publicUrl }];
-        return { ...prev, [code]: newCaptures };
+        const current = prev[code] || [];
+        const updated = current.length >= 2
+          ? [...current.slice(1), { embedding: capture.embedding, image: publicUrl }]
+          : [...current, { embedding: capture.embedding, image: publicUrl }];
+
+        // Save a local copy just in case
+        const localMap = JSON.parse(localStorage.getItem('user_ref_map') || '{}');
+        localMap[code] = updated;
+        localStorage.setItem('user_ref_map', JSON.stringify(localMap));
+
+        return { ...prev, [code]: updated };
       });
 
-      // Save a local copy just in case
-      const localMap = JSON.parse(localStorage.getItem('user_ref_map') || '{}');
-      localMap[code] = currentCaptures.length >= 2
-        ? [...currentCaptures.slice(1), { embedding: capture.embedding, image: publicUrl }]
-        : [...currentCaptures, { embedding: capture.embedding, image: publicUrl }];
-      localStorage.setItem('user_ref_map', JSON.stringify(localMap));
-
-      addToast(`IA: Sincronización completada para ${code}`, 'success');
+      addToast(`✅ Imagen compartida con éxito: ${code}`, 'success');
     } catch (error) {
       console.error('Supabase sync error:', error);
       addToast('Error al sincronizar con la nube', 'error');

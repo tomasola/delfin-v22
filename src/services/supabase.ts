@@ -19,7 +19,7 @@ export async function uploadCapture(refCode: string, dataUrl: string) {
     const fileName = `${refCode}_${Date.now()}.jpg`;
     const filePath = `${refCode}/${fileName}`;
 
-    const { data, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
         .from('captures')
         .upload(filePath, blob, {
             contentType: 'image/jpeg',
