@@ -1,5 +1,9 @@
-const Jimp = require('jimp');
-const path = require('path');
+import { Jimp } from 'jimp';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const images = [
     { src: 'public/icon-192.png', w: 192, h: 192 },
@@ -17,8 +21,8 @@ async function resizeAll() {
 
             console.log(`Resizing to ${img.w}x${img.h}...`);
             await jimpImage
-                .resize(img.w, img.h)
-                .writeAsync(imagePath);
+                .resize({ w: img.w, h: img.h })
+                .write(imagePath);
 
             console.log(`Success: ${img.src}`);
         } catch (error) {
