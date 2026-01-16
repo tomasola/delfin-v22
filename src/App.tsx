@@ -160,8 +160,46 @@ function App() {
     }
   }, [selectedRef, pendingPrint])
 
-  // Load data from localStorage
+  // Load data from Supabase
   useEffect(() => {
+    const initCloudData = async () => {
+      try {
+        const { fetchAllCaptures, subscribeToCaptures } = await import('./services/supabase');
+        const data = await fetchAllCaptures();
+
+        const map: Record<string, { embedding: number[], image: string }[]> = {};
+        data.forEach((row: any) => {
+          if (!map[row.ref_code]) map[row.ref_code] = [];
+          map[row.ref_code].push({ embedding: row.embedding, image: row.image_url });
+        });
+
+        setUserRefMap(map);
+
+        // Real-time subscription
+        const sub = subscribeToCaptures((payload) => {
+          const newRow = payload.new;
+          setUserRefMap(prev => {
+            const current = prev[newRow.ref_code] || [];
+            const updated = current.length >= 2
+              ? [...current.slice(1), { embedding: newRow.embedding, image: newRow.image_url }]
+              : [...current, { embedding: newRow.embedding, image: newRow.image_url }];
+            return { ...prev, [newRow.ref_code]: updated };
+          });
+          addToast(`IA: Nueva foto recibida para ${newRow.ref_code}`, 'info');
+        });
+
+        return () => { sub.unsubscribe(); };
+      } catch (e) {
+        console.error('Error connecting to Supabase:', e);
+        // Fallback to localStorage if offline or error
+        const savedUserRefs = localStorage.getItem('user_ref_map');
+        if (savedUserRefs) setUserRefMap(JSON.parse(savedUserRefs));
+      }
+    };
+
+    initCloudData();
+
+    // Still load history from localStorage (device-specific)
     const savedHistory = localStorage.getItem('recent_scans')
     if (savedHistory) {
       try {
@@ -170,42 +208,12 @@ function App() {
         console.error('Error loading history:', e)
       }
     }
-
-    const savedUserRefs = localStorage.getItem('user_ref_map')
-    if (savedUserRefs) {
-      try {
-        const parsed = JSON.parse(savedUserRefs)
-        // Migration: If existing data is in old format (object instead of array of objects)
-        const keys = Object.keys(parsed)
-        if (keys.length > 0) {
-          const firstVal = parsed[keys[0]]
-          if (firstVal && !Array.isArray(firstVal)) {
-            console.log('Migrating userRefMap to dual-capture format...')
-            const migrated: Record<string, any[]> = {}
-            keys.forEach(k => {
-              migrated[k] = [parsed[k]]
-            })
-            setUserRefMap(migrated)
-          } else {
-            setUserRefMap(parsed)
-          }
-        } else {
-          setUserRefMap({})
-        }
-      } catch (e) {
-        console.error('Error loading user refs:', e)
-      }
-    }
   }, [])
 
-  // Save data to localStorage
+  // Save history to localStorage
   useEffect(() => {
     localStorage.setItem('recent_scans', JSON.stringify(recentRefs))
   }, [recentRefs])
-
-  useEffect(() => {
-    localStorage.setItem('user_ref_map', JSON.stringify(userRefMap))
-  }, [userRefMap])
 
   const addToHistory = (ref: Reference) => {
     setRecentRefs(prev => {
@@ -215,22 +223,40 @@ function App() {
     })
   }
 
-  // Handle linking a capture to a reference
-  const handleLinkReference = (code: string, capture: { embedding: number[], image: string }) => {
-    setUserRefMap(prev => {
-      const currentCaptures = prev[code] || [];
-      // Keep only the last 1 capture to add the new one (total 2)
-      // If we want 2 total, and we already have 2, we remove the oldest [0]
-      const newCaptures = currentCaptures.length >= 2
-        ? [...currentCaptures.slice(1), capture]
-        : [...currentCaptures, capture];
+  // Handle linking a capture to a reference (NOW WITH CLOUD SYNC)
+  const handleLinkReference = async (code: string, capture: { embedding: number[], image: string }) => {
+    addToast('Subiendo a la nube...', 'info');
 
-      return {
-        ...prev,
-        [code]: newCaptures
-      };
-    });
-    addToast(`IA: Referencia ${code} optimizada con nueva captura`, 'success');
+    try {
+      const { uploadCapture, saveCaptureMetadata } = await import('./services/supabase');
+
+      // 1. Upload image to Storage
+      const publicUrl = await uploadCapture(code, capture.image);
+
+      // 2. Save metadata to Database
+      await saveCaptureMetadata(code, publicUrl, capture.embedding);
+
+      // Note: userRefMap will be updated by the subscription (or we can update it locally too)
+      setUserRefMap(prev => {
+        const currentCaptures = prev[code] || [];
+        const newCaptures = currentCaptures.length >= 2
+          ? [...currentCaptures.slice(1), { embedding: capture.embedding, image: publicUrl }]
+          : [...currentCaptures, { embedding: capture.embedding, image: publicUrl }];
+        return { ...prev, [code]: newCaptures };
+      });
+
+      // Save a local copy just in case
+      const localMap = JSON.parse(localStorage.getItem('user_ref_map') || '{}');
+      localMap[code] = currentCaptures.length >= 2
+        ? [...currentCaptures.slice(1), { embedding: capture.embedding, image: publicUrl }]
+        : [...currentCaptures, { embedding: capture.embedding, image: publicUrl }];
+      localStorage.setItem('user_ref_map', JSON.stringify(localMap));
+
+      addToast(`IA: Sincronización completada para ${code}`, 'success');
+    } catch (error) {
+      console.error('Supabase sync error:', error);
+      addToast('Error al sincronizar con la nube', 'error');
+    }
   }
 
   // Auto-cleanup for old Service Workers (v2 -> v7 transition)
