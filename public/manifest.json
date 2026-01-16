@@ -1,7 +1,7 @@
 {
-    "name": "Delfín Etiquetas v23",
-    "short_name": "Delfín v23",
-    "id": "/v23",
+    "name": "Delfín Etiquetas v23.2",
+    "short_name": "Delfín v23.2",
+    "id": "/v23.2",
     "description": "Catálogo de referencias Delfín - Búsqueda rápida de cortinas decorativas, guías y mosquiteras",
     "start_url": "/",
     "display": "standalone",
@@ -32,6 +32,13 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Catálogo",
+            "url": "/",
+            "description": "Abrir el catálogo de referencias"
         }
     ],
     "categories": [
